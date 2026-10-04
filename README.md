@@ -73,6 +73,8 @@ usa el adaptador opennext. la base tiene que ser neon (postgres por http). pglit
 4. cargá los secretos (uno por comando): `npx wrangler secret put DATABASE_URL`, `ENCRYPTION_KEY`, `APP_URL` y, si los usás, `GEMINI_API_KEY`, `GROQ_API_KEY`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `RESEND_API_KEY`
 5. `npm run deploy`
 
+si lo conectás desde el dashboard de cloudflare (workers builds): build command `npx opennextjs-cloudflare build`, deploy command `npx wrangler deploy`, y las variables del paso 4 en variables y secretos.
+
 `npm run preview` lo corre en local con el runtime de workers. cuando cambie el esquema, repetí el paso 2 antes de deployar.
 
 ## arquitectura
