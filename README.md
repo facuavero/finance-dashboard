@@ -30,7 +30,7 @@ npm run dev
 
 abrí http://localhost:3000 y tocá **probar con una cuenta demo**: crea un usuario con 6 meses de movimientos, presupuestos, objetivos y gmail/calendar de ejemplo, todo relativo a la fecha de hoy.
 
-sin `DATABASE_URL` usa pglite: postgres embebido en `.data/pglite`, cero instalación. para producción poné un `DATABASE_URL` de postgres (neon, supabase, railway, rds). las migraciones corren solas al arrancar.
+sin `DATABASE_URL` usa pglite: postgres embebido en `.data/pglite`, cero instalación. para producción poné un `DATABASE_URL` de postgres (neon, supabase, railway, rds). con pglite o postgres por tcp las migraciones corren solas al arrancar. con neon se corren a mano con `npm run db:migrate`.
 
 ## ia gratuita
 
@@ -62,6 +62,18 @@ detalles:
 ## recuperación de contraseña
 
 con `RESEND_API_KEY` manda el email por resend. sin eso, en desarrollo el link aparece en la pantalla y en la consola del servidor. en producción sin proveedor de email no se muestra.
+
+## subirlo a cloudflare workers
+
+usa el adaptador opennext. la base tiene que ser neon (postgres por http). pglite no anda en workers porque no hay disco.
+
+1. creá una base en https://neon.tech y copiá la connection string (`postgres://...neon.tech/...?sslmode=require`)
+2. corré las migraciones una vez: `DATABASE_URL="<tu string>" npm run db:migrate`
+3. `npx wrangler login`
+4. cargá los secretos (uno por comando): `npx wrangler secret put DATABASE_URL`, `ENCRYPTION_KEY`, `APP_URL` y, si los usás, `GEMINI_API_KEY`, `GROQ_API_KEY`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `RESEND_API_KEY`
+5. `npm run deploy`
+
+`npm run preview` lo corre en local con el runtime de workers. cuando cambie el esquema, repetí el paso 2 antes de deployar.
 
 ## arquitectura
 
