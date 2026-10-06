@@ -23,6 +23,16 @@ async function clientKey() {
   return h.get('x-forwarded-for')?.split(',')[0]?.trim() || h.get('x-real-ip') || 'local'
 }
 
+// loguea en qué paso falló algo. en workers un error pelado no dice dónde: esto lo deja en wrangler tail
+async function step<T>(name: string, fn: () => Promise<T>): Promise<T> {
+  try {
+    return await fn()
+  } catch (err) {
+    console.error(`[caudal] login: falló en ${name}`, err instanceof Error ? `${err.name}: ${err.message}\n${err.stack}` : err)
+    throw err
+  }
+}
+
 const safeNext = (v: FormDataEntryValue | null) => {
   const s = typeof v === 'string' ? v : ''
   return s.startsWith('/') && !s.startsWith('//') ? s : '/inicio'
@@ -52,17 +62,17 @@ export async function loginAction(_: FormState, form: FormData): Promise<FormSta
   const parsed = loginSchema.safeParse(raw)
   if (!parsed.success) return { errors: flattenErrors(parsed.error), values }
 
-  const key = `login:${await clientKey()}:${parsed.data.email}`
+  const key = `login:${await step('clientKey', clientKey)}:${parsed.data.email}`
   const limit = rateLimit(key, 8, 15 * 60_000)
   if (!limit.ok) return { message: `Demasiados intentos. Esperá ${Math.ceil(limit.retryInSec / 60)} minutos o recuperá tu contraseña.`, values }
 
-  const db = await getDb()
-  const user = await findUserByEmail(db, parsed.data.email)
+  const db = await step('getDb', getDb)
+  const user = await step('findUserByEmail', () => findUserByEmail(db, parsed.data.email))
   // mismo mensaje para email inexistente o clave incorrecta: no revela qué cuentas existen
-  const ok = user ? await verifyPassword(parsed.data.password, user.passwordHash) : (await hashPassword('x'), false)
+  const ok = await step('password', async () => (user ? await verifyPassword(parsed.data.password, user.passwordHash) : (await hashPassword('x'), false)))
   if (!user || !ok) return { message: 'Email o contraseña incorrectos.', values }
 
-  await createSession(user.id, parsed.data.remember)
+  await step('createSession', () => createSession(user.id, parsed.data.remember))
   redirect(safeNext(form.get('next')))
 }
 
