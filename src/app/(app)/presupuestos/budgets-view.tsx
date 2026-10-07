@@ -12,6 +12,7 @@ import { ConfirmDialog } from '@/components/ui/alert-dialog'
 import { Field, Input, NativeSelect } from '@/components/ui/input'
 import { Menu, MenuContent, MenuItem, MenuTrigger, Segmented } from '@/components/ui/misc'
 import { EmptyState, Meter, PageHeader } from '@/components/app/states'
+import { AskAi } from '@/components/app/ask-ai'
 import { CategoryBadge } from '@/components/app/icons'
 import { Money } from '@/components/app/money'
 import { dateShort, money, parseMoneyInput, pct, plural } from '@/lib/format'
@@ -37,9 +38,12 @@ export function BudgetsView({ budgets, categories, goals, suggestions, today, op
         title="Presupuestos"
         description="Cuánto querés gastar por categoría, período u objetivo. Te avisamos antes de que se agote."
         actions={
-          <Button onClick={() => setEditing({})}>
-            <Plus /> Nuevo presupuesto
-          </Button>
+          <>
+            <AskAi topic="presupuestos" suggestions={['¿Qué presupuesto estoy por pasar?', '¿Cuánto me queda para gastar esta semana?', '¿Qué categoría debería presupuestar?']} />
+            <Button onClick={() => setEditing({})}>
+              <Plus /> Nuevo presupuesto
+            </Button>
+          </>
         }
       />
 
@@ -181,7 +185,7 @@ function Stat({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <Card className="p-5">
       <p className="label-caps">{label}</p>
-      <p className="mt-3 font-mono text-[26px] leading-none font-medium tracking-[-0.045em]">{value}</p>
+      <p className="mt-3 font-figure text-[26px] leading-none font-medium tracking-[-0.03em]">{value}</p>
     </Card>
   )
 }

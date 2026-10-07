@@ -20,13 +20,15 @@ const ROWS: { data: string; why: string; where: string; remove: string }[] = [
   { data: 'Calendar: título, fechas y tipo de los eventos de los próximos 60 días', why: 'Anticipar viajes, eventos y vencimientos', where: 'Tabla separada de hallazgos', remove: 'Desconectar Calendar' },
   { data: 'Tokens de acceso de Google', why: 'Mantener la conexión sin pedirte permiso cada vez', where: 'Cifrados con AES-256-GCM', remove: 'Desconectar (además se revocan en Google)' },
   { data: 'Resúmenes generados por la IA', why: 'No volver a pedirle lo mismo a la IA si tus datos no cambiaron', where: 'Base de datos de Caudal', remove: 'Borrar datos financieros' },
-  { data: 'Tema (claro/oscuro) y modo privacidad', why: 'Recordar tus preferencias', where: 'Solo en tu navegador', remove: 'Borrar datos del sitio en el navegador' },
+  { data: 'Moneda de visualización', why: 'Mostrar tus montos con el símbolo que elegiste', where: 'En tu cuenta', remove: 'Borrar la cuenta' },
+  { data: 'Tema, modo privacidad, centavos y tip del día', why: 'Recordar tus preferencias', where: 'Solo en tu navegador (cookie y almacenamiento local)', remove: 'Borrar datos del sitio en el navegador' },
+  { data: 'Texto que escribís para cargar un movimiento con IA', why: 'Interpretarlo y proponerte el movimiento. Se envía el texto, la fecha de hoy y los nombres de tus categorías', where: 'No se guarda: solo viaja al proveedor de IA, y solo si la IA externa está activa', remove: 'Desactivá la IA externa más abajo y se interpreta en el servidor de Caudal' },
 ]
 
 export default async function Privacidad() {
   const { user, ctx, recommendations, combined, integrations } = await getAppData()
   const engine = availableEngine()
-  const payload = aiPayload(ctx, recommendations, combined)
+  const payload = aiPayload(ctx, recommendations, combined, user.currency)
   const gmail = integrations.find((i) => i.provider === 'gmail')
   const gcal = integrations.find((i) => i.provider === 'gcal')
 

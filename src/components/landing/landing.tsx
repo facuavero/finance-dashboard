@@ -154,7 +154,7 @@ export function Landing({ demo }: { demo: boolean }) {
             {FACTS.map((f, i) => (
               <div key={f.label} className={cn('border-border py-5 pr-4', i % 2 === 1 && 'border-l pl-4 lg:pl-6', i >= 2 && 'border-t lg:border-t-0', i === 2 && 'lg:border-l lg:pl-6')}>
                 <dt className="label-caps">{f.label}</dt>
-                <dd className="mt-2 font-mono text-[20px] font-medium tracking-[-0.03em] sm:text-[26px]">{f.value}</dd>
+                <dd className="mt-2 font-figure text-[20px] font-medium tracking-[-0.02em] sm:text-[26px]">{f.value}</dd>
               </div>
             ))}
           </dl>

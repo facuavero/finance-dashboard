@@ -25,7 +25,7 @@ function TooltipBox({ title, rows }: { title: string; rows: TipRow[] }) {
             <svg width="12" height="4" aria-hidden>
               <line x1="0" y1="2" x2="12" y2="2" stroke={r.color} strokeWidth="2" strokeDasharray={r.dashed ? '3 2' : undefined} />
             </svg>
-            <span className="money num font-mono font-medium text-fg">{money(r.value!)}</span>
+            <span className="money num font-figure font-medium text-fg">{money(r.value!)}</span>
             <span className="text-muted">{r.label}</span>
           </div>
         ))}
@@ -63,7 +63,7 @@ function AxisValueTag({ viewBox, value }: { viewBox?: { x: number; y: number; wi
       {/* tapa los ticks del eje que caen debajo de la etiqueta */}
       <rect x={x - 2} y={viewBox.y - 17} width={62} height={34} fill="var(--surface)" />
       <rect x={x} y={viewBox.y - 9} width={w} height={18} rx={9} fill="var(--text)" />
-      <text x={x + w / 2} y={viewBox.y + 3.5} textAnchor="middle" fontSize={11} fontFamily="var(--font-mono)" fill="var(--bg)">
+      <text x={x + w / 2} y={viewBox.y + 3.5} textAnchor="middle" fontSize={11} fontFamily="var(--font-figure)" fill="var(--bg)">
         {text}
       </text>
     </g>

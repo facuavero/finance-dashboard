@@ -105,6 +105,7 @@
   --color-chart-3: var(--chart-3);
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --font-figure: var(--font-figure-face), var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
   --font-serif: var(--font-serif-display), ui-serif, Georgia, serif;
   --radius-card: 18px;
   --animate-in: fade-in 160ms ease-out;
@@ -154,6 +155,12 @@
   .num {
     font-variant-numeric: tabular-nums;
   }
+  /* cifras: Inter con numerales tabulares. no es mono, pero las columnas alinean */
+  .font-figure {
+    font-family: var(--font-figure);
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: 'tnum', 'ss01';
+  }
   .label-caps {
     font-family: var(--font-mono);
     font-size: 11px;
@@ -170,9 +177,10 @@
   }
   /* cifras protagonistas en mono */
   .figure {
-    font-family: var(--font-mono);
+    font-family: var(--font-figure);
     font-variant-numeric: tabular-nums;
-    letter-spacing: -0.04em;
+    font-feature-settings: 'tnum', 'ss01';
+    letter-spacing: -0.025em;
     font-weight: 500;
   }
   /* brillo detrás de un bloque clave (login, input de ia) */

@@ -1,3 +1,4 @@
+import { AskAi } from '@/components/app/ask-ai'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { AlertTriangle, Repeat } from 'lucide-react'
@@ -38,7 +39,7 @@ export default async function Fugas() {
 
   return (
     <>
-      <PageHeader title="Fugas de dinero" description="Lo que se va sin que lo notes: compras chicas repetidas, suscripciones y gastos que crecieron fuera de lo normal." />
+      <PageHeader title="Fugas de dinero" description="Lo que se va sin que lo notes: compras chicas repetidas, suscripciones y gastos que crecieron fuera de lo normal." actions={<AskAi topic="fugas" suggestions={["¿Cuáles son mis mayores fugas de plata?", "¿Cuánto gasto en suscripciones por año?", "¿Qué recortaría primero?"]} />} />
 
       {ctx.hasData && (
         <Card className="mb-6 p-5">
@@ -211,7 +212,7 @@ function MiniStat({ label, value, estimated }: { label: string; value: React.Rea
         {label}
         {estimated && <span className="rounded-full border border-dashed border-border-strong px-1.5 text-[10px] text-muted">estimado</span>}
       </p>
-      <p className="mt-3 font-mono text-[24px] leading-none font-medium tracking-[-0.045em]">{value}</p>
+      <p className="mt-3 font-figure text-[24px] leading-none font-medium tracking-[-0.03em]">{value}</p>
     </Card>
   )
 }

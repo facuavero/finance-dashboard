@@ -3,15 +3,17 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { ChevronDown } from 'lucide-react'
+import { ArrowRight, Check, ChevronDown, Pencil, Sparkles } from 'lucide-react'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Field, Input, NativeSelect } from '@/components/ui/input'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/misc'
 import { CategoryIcon } from './icons'
-import { money, parseMoneyInput } from '@/lib/format'
+import { MAX_AMOUNT_CENTS, currencySymbol, dateLong, money, parseMoneyInput } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import { deleteTransactionsAction, saveTransactionAction } from '@/modules/finance/actions'
+import { parseTxnAction } from '@/modules/ai/actions'
+import type { ParsedTxn } from '@/modules/ai/parse-txn'
 
 export type CatOption = { id: string; name: string; kind: 'expense' | 'income'; parentId: string | null; icon: string; usage: number }
 
@@ -45,9 +47,12 @@ const blank = (today: string): TxnDraft => ({ type: 'expense', amount: '', date:
 export function QuickAddProvider({ categories, today, children }: { categories: CatOption[]; today: string; children: React.ReactNode }) {
   const [isOpen, setOpen] = useState(false)
   const [draft, setDraft] = useState<TxnDraft>(blank(today))
+  // sin borrador: arranca por la IA (escribís y confirma). con borrador o al editar: va directo al formulario
+  const [mode, setMode] = useState<'ai' | 'form'>('ai')
   const open = useCallback(
     (d?: Partial<TxnDraft>) => {
       setDraft({ ...blank(today), ...d })
+      setMode(d && Object.keys(d).length ? 'form' : 'ai')
       setOpen(true)
     },
     [today],
@@ -71,19 +76,79 @@ export function QuickAddProvider({ categories, today, children }: { categories: 
     <QuickAddContext.Provider value={value}>
       {children}
       <Dialog open={isOpen} onOpenChange={setOpen}>
-        <DialogContent title={draft.id ? 'Editar movimiento' : 'Nuevo movimiento'} description={draft.id ? undefined : 'Monto, categoría y listo. El resto es opcional.'}>
-          {isOpen && <TxnForm key={draft.id ?? 'new'} initial={draft} categories={categories} today={today} onDone={() => setOpen(false)} />}
+        <DialogContent title={draft.id ? 'Editar movimiento' : 'Nuevo movimiento'} description={draft.id ? undefined : mode === 'ai' ? 'Contalo con tus palabras y lo preparamos.' : 'Monto, categoría y listo. El resto es opcional.'}>
+          {isOpen && mode === 'ai' && (
+            <AiCapture
+              categories={categories}
+              today={today}
+              onDone={() => setOpen(false)}
+              onManual={(d) => {
+                setDraft({ ...blank(today), ...d })
+                setMode('form')
+              }}
+            />
+          )}
+          {isOpen && mode === 'form' && <TxnForm key={draft.id ?? `new-${draft.amount}-${draft.categoryId}`} initial={draft} categories={categories} today={today} onDone={() => setOpen(false)} />}
         </DialogContent>
       </Dialog>
     </QuickAddContext.Provider>
   )
 }
 
-export function TxnForm({ initial, categories, today, onDone }: { initial: TxnDraft; categories: CatOption[]; today: string; onDone: () => void }) {
+/** guarda un movimiento y avisa con un toast que permite deshacer. lo usan el formulario y la carga con IA */
+function useSaveTxn(categories: CatOption[]) {
   const router = useRouter()
+  const [pending, start] = useTransition()
+  const save = (
+    v: { type: 'expense' | 'income'; amountCents: number; date: string; description: string; categoryId: string | null; subcategoryId: string | null; paymentMethod: string; recurrence: TxnDraft['recurrence']; tags?: string[] },
+    id: string | undefined,
+    cb: { onDone: () => void; onError?: (r: { error: string; fieldErrors?: Record<string, string> }) => void },
+  ) =>
+    start(async () => {
+      const res = await saveTransactionAction({ ...v, paymentMethod: v.paymentMethod as 'debito', tags: v.tags ?? [] }, id)
+      if (!res.ok) {
+        cb.onError?.(res)
+        toast.error(res.error)
+        return
+      }
+      const cat = categories.find((c) => c.id === v.categoryId)
+      const newId = res.data?.id
+      cb.onDone()
+      toast.success(`${id ? 'Movimiento actualizado' : v.type === 'expense' ? 'Gasto registrado' : 'Ingreso registrado'} · ${money(v.amountCents)}${cat ? ` en ${cat.name}` : ''}`, {
+        action:
+          !id && newId
+            ? {
+                label: 'Deshacer',
+                onClick: async () => {
+                  await deleteTransactionsAction([newId])
+                  router.refresh()
+                  toast('Se deshizo el movimiento')
+                },
+              }
+            : undefined,
+      })
+      router.refresh()
+    })
+  return { save, pending }
+}
+
+/** el monto se limita mientras se escribe: un número gigante rompía el layout y el servidor lo rechaza igual */
+function cleanAmount(next: string): { value: string; tooBig: boolean } {
+  let value = next.replace(/[^\d.,]/g, '')
+  let tooBig = false
+  // un pegado gigante se recorta al último valor permitido
+  while (value && (parseMoneyInput(value) ?? 0) > MAX_AMOUNT_CENTS) {
+    value = value.slice(0, -1)
+    tooBig = true
+  }
+  return { value: value.slice(0, 20), tooBig }
+}
+const MAX_LABEL = `Máximo ${money(MAX_AMOUNT_CENTS)}`
+
+export function TxnForm({ initial, categories, today, onDone }: { initial: TxnDraft; categories: CatOption[]; today: string; onDone: () => void }) {
   const [d, setD] = useState<TxnDraft>(initial)
   const [errors, setErrors] = useState<Record<string, string>>({})
-  const [pending, start] = useTransition()
+  const { save, pending } = useSaveTxn(categories)
   const amountRef = useRef<HTMLInputElement>(null)
   const set = <K extends keyof TxnDraft>(k: K, v: TxnDraft[K]) => {
     setD((p) => ({ ...p, [k]: v }))
@@ -111,44 +176,21 @@ export function TxnForm({ initial, categories, today, onDone }: { initial: TxnDr
       if (errs.amount) amountRef.current?.focus()
       return
     }
-    start(async () => {
-      const res = await saveTransactionAction(
-        {
-          type: d.type,
-          amountCents: cents!,
-          date: d.date,
-          description: d.description,
-          categoryId: d.categoryId,
-          subcategoryId: d.subcategoryId,
-          paymentMethod: d.paymentMethod as 'debito',
-          recurrence: d.recurrence,
-          tags: d.tags.split(',').map((t) => t.trim()).filter(Boolean),
-        },
-        d.id,
-      )
-      if (!res.ok) {
-        setErrors({ ...(res.fieldErrors ?? {}), amount: res.fieldErrors?.amountCents ?? '' })
-        toast.error(res.error)
-        return
-      }
-      const cat = categories.find((c) => c.id === d.categoryId)
-      const newId = res.data?.id
-      onDone()
-      toast.success(`${d.id ? 'Movimiento actualizado' : d.type === 'expense' ? 'Gasto registrado' : 'Ingreso registrado'} · ${money(cents!)}${cat ? ` en ${cat.name}` : ''}`, {
-        action:
-          !d.id && newId
-            ? {
-                label: 'Deshacer',
-                onClick: async () => {
-                  await deleteTransactionsAction([newId])
-                  router.refresh()
-                  toast('Se deshizo el movimiento')
-                },
-              }
-            : undefined,
-      })
-      router.refresh()
-    })
+    save(
+      {
+        type: d.type,
+        amountCents: cents!,
+        date: d.date,
+        description: d.description,
+        categoryId: d.categoryId,
+        subcategoryId: d.subcategoryId,
+        paymentMethod: d.paymentMethod,
+        recurrence: d.recurrence,
+        tags: d.tags.split(',').map((t) => t.trim()).filter(Boolean),
+      },
+      d.id,
+      { onDone, onError: (r) => setErrors({ ...(r.fieldErrors ?? {}), amount: r.fieldErrors?.amountCents ?? '' }) },
+    )
   }
 
   return (
@@ -170,7 +212,7 @@ export function TxnForm({ initial, categories, today, onDone }: { initial: TxnDr
 
       <Field label="Monto" htmlFor="qa-amount" error={errors.amount}>
         <div className="relative">
-          <span className="pointer-events-none absolute top-1/2 left-5 -translate-y-1/2 font-mono text-3xl text-muted">$</span>
+          <span className="pointer-events-none absolute top-1/2 left-5 -translate-y-1/2 font-figure text-3xl text-muted">{currencySymbol()}</span>
           <Input
             ref={amountRef}
             id="qa-amount"
@@ -178,9 +220,13 @@ export function TxnForm({ initial, categories, today, onDone }: { initial: TxnDr
             autoComplete="off"
             placeholder="0"
             value={d.amount}
-            onChange={(e) => set('amount', e.target.value)}
+            onChange={(e) => {
+              const r = cleanAmount(e.target.value)
+              set('amount', r.value)
+              if (r.tooBig) setErrors((x) => ({ ...x, amount: MAX_LABEL }))
+            }}
             aria-invalid={!!errors.amount}
-            className="num h-20 rounded-2xl pl-12 font-mono text-[40px] font-medium tracking-[-0.04em]"
+            className={cn('num h-20 min-w-0 rounded-2xl font-figure font-medium tracking-[-0.03em]', currencySymbol().length > 1 ? 'pl-[4.5rem]' : 'pl-12', d.amount.length > 13 ? 'text-[28px]' : 'text-[40px]')}
           />
         </div>
       </Field>
@@ -284,10 +330,193 @@ export function TxnForm({ initial, categories, today, onDone }: { initial: TxnDr
         <p className="hidden text-[12px] text-muted sm:block">
           <kbd className="rounded-full border border-border-strong px-1.5 font-mono text-[11px]">Enter</kbd> guarda
         </p>
-        <Button type="submit" size="lg" loading={pending} className="w-full sm:w-auto">
-          {d.id ? 'Guardar cambios' : cents ? `Registrar ${money(cents)}` : 'Registrar'}
+        <Button type="submit" size="lg" loading={pending} className="min-w-0 max-w-full flex-1 sm:flex-none">
+          <span className="truncate">{d.id ? 'Guardar cambios' : cents ? `Registrar ${money(cents, { decimals: cents % 100 !== 0 || undefined })}` : 'Registrar'}</span>
         </Button>
       </div>
     </form>
+  )
+}
+
+const EXAMPLES = ['pedidosya 4500 ayer', 'cobré el sueldo 1.200.000', 'uber 9700 con tarjeta', 'netflix 8999 todos los meses']
+const RECURRENCE_LABEL: Record<TxnDraft['recurrence'], string> = { none: 'Único', weekly: 'Semanal', monthly: 'Mensual', yearly: 'Anual' }
+
+const asDraft = (p: ParsedTxn): Partial<TxnDraft> => ({
+  type: p.type,
+  amount: p.amountCents ? String(p.amountCents / 100) : '',
+  date: p.date,
+  description: p.description,
+  categoryId: p.categoryId,
+  subcategoryId: p.subcategoryId,
+  paymentMethod: p.paymentMethod,
+  recurrence: p.recurrence,
+})
+
+/**
+ * paso 1 del alta: la persona escribe el movimiento, la IA lo interpreta y lo muestra cómo quedaría.
+ * puede pedir cambios en lenguaje natural, abrir el formulario completo o confirmar con un botón.
+ */
+function AiCapture({ categories, today, onDone, onManual }: { categories: CatOption[]; today: string; onDone: () => void; onManual: (d: Partial<TxnDraft>) => void }) {
+  const [text, setText] = useState('')
+  const [fix, setFix] = useState('')
+  const [proposal, setProposal] = useState<{ draft: ParsedTxn; engine: string; external: boolean } | null>(null)
+  const [error, setError] = useState('')
+  const [thinking, startThinking] = useTransition()
+  const { save, pending } = useSaveTxn(categories)
+  const inputRef = useRef<HTMLInputElement>(null)
+  const confirmRef = useRef<HTMLButtonElement>(null)
+
+  useEffect(() => {
+    inputRef.current?.focus()
+  }, [])
+
+  const run = (input: { text: string; previous?: ParsedTxn; instruction?: string }) => {
+    setError('')
+    startThinking(async () => {
+      const r = await parseTxnAction(input)
+      if (!r.ok) return void setError(r.error)
+      setProposal({ draft: r.draft, engine: r.engine, external: r.external })
+      setFix('')
+      // Enter vuelve a confirmar sin tocar el mouse
+      setTimeout(() => confirmRef.current?.focus(), 0)
+    })
+  }
+
+  if (!proposal) {
+    return (
+      <form
+        className="space-y-4"
+        onSubmit={(e) => {
+          e.preventDefault()
+          if (text.trim().length >= 2) run({ text })
+        }}
+      >
+        <div className="relative">
+          <Sparkles className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-accent" aria-hidden />
+          <Input ref={inputRef} aria-label="Contá el movimiento" autoComplete="off" maxLength={300} value={text} onChange={(e) => setText(e.target.value)} placeholder="Ej: pedidosya 4500 ayer" className="h-14 rounded-2xl pl-11 text-[15px]" aria-invalid={!!error} />
+        </div>
+        {error && (
+          <p className="text-[13px] text-critical" role="alert">
+            {error}
+          </p>
+        )}
+        <div className="flex flex-wrap gap-1.5" aria-label="Ejemplos">
+          {EXAMPLES.map((ex) => (
+            <button key={ex} type="button" onClick={() => setText(ex)} className="h-8 cursor-pointer rounded-full bg-surface-2 px-3 text-[12.5px] text-fg-2 transition-colors hover:bg-surface-3 hover:text-fg">
+              {ex}
+            </button>
+          ))}
+        </div>
+        <div className="flex items-center justify-between gap-3 border-t border-border pt-4">
+          <button type="button" onClick={() => onManual({})} className="cursor-pointer text-[13px] font-medium text-fg-2 hover:text-fg">
+            Cargar a mano
+          </button>
+          <Button type="submit" size="lg" loading={thinking} disabled={text.trim().length < 2}>
+            Preparar <ArrowRight />
+          </Button>
+        </div>
+      </form>
+    )
+  }
+
+  const p = proposal.draft
+  const cat = categories.find((c) => c.id === p.categoryId)
+  const sub = categories.find((c) => c.id === p.subcategoryId)
+  const missing = [!p.amountCents && 'el monto', !p.categoryId && 'la categoría'].filter(Boolean) as string[]
+  const roots = categories.filter((c) => c.kind === p.type && !c.parentId).sort((a, b) => b.usage - a.usage)
+  const yesterday = new Date(new Date(`${today}T00:00:00Z`).getTime() - 86_400_000).toISOString().slice(0, 10)
+  const when = p.date === today ? 'Hoy' : p.date === yesterday ? 'Ayer' : null
+  const patch = (x: Partial<ParsedTxn>) => setProposal({ ...proposal, draft: { ...p, ...x } })
+
+  const confirm = () => {
+    if (!p.amountCents || !p.categoryId) return
+    save({ type: p.type, amountCents: p.amountCents, date: p.date, description: p.description, categoryId: p.categoryId, subcategoryId: p.subcategoryId, paymentMethod: p.paymentMethod, recurrence: p.recurrence }, undefined, { onDone })
+  }
+
+  return (
+    <div className="space-y-4">
+      <p className="text-[12px] text-muted">
+        “{text}” <span aria-hidden>·</span> así quedaría
+      </p>
+
+      <section aria-label="Movimiento preparado" className="relative overflow-hidden rounded-2xl border border-border-strong bg-surface-2 p-5">
+        <div className="pointer-events-none absolute -top-16 -right-10 size-48 rounded-full bg-[radial-gradient(closest-side,var(--glow),transparent)]" aria-hidden />
+        <div className="relative flex items-start justify-between gap-3">
+          <span className="rounded-full bg-surface-3 px-2.5 py-0.5 text-[12px] font-medium text-fg-2">{p.type === 'expense' ? 'Gasto' : 'Ingreso'}</span>
+          <span className="text-[12px] text-muted">{when ? `${when} · ` : ''}{dateLong(p.date, p.date.slice(0, 4) !== today.slice(0, 4))}</span>
+        </div>
+        <p className="money relative mt-3 truncate font-figure text-[34px] leading-none font-medium tracking-[-0.03em]">{p.amountCents ? `${p.type === 'expense' ? '−' : '+'}${money(p.amountCents, { decimals: p.amountCents % 100 !== 0 || undefined })}` : <span className="text-muted">Sin monto</span>}</p>
+        <dl className="relative mt-4 grid gap-x-6 gap-y-2.5 text-[13px] sm:grid-cols-2">
+          <div>
+            <dt className="text-muted">Categoría</dt>
+            <dd className="mt-0.5 flex items-center gap-1.5 font-medium">{cat ? <><CategoryIcon icon={sub?.icon ?? cat.icon} className="size-3.5 text-muted" /> {sub ? `${cat.name} · ${sub.name}` : cat.name}</> : <span className="text-muted">Sin categoría</span>}</dd>
+          </div>
+          <div>
+            <dt className="text-muted">Descripción</dt>
+            <dd className="mt-0.5 truncate font-medium">{p.description || <span className="font-normal text-muted">Sin descripción</span>}</dd>
+          </div>
+          <div>
+            <dt className="text-muted">Medio de pago</dt>
+            <dd className="mt-0.5 font-medium">{PAYMENT_METHODS.find((m) => m.value === p.paymentMethod)?.label}</dd>
+          </div>
+          <div>
+            <dt className="text-muted">Frecuencia</dt>
+            <dd className="mt-0.5 font-medium">{RECURRENCE_LABEL[p.recurrence]}</dd>
+          </div>
+        </dl>
+      </section>
+
+      {!p.categoryId && (
+        <fieldset>
+          <legend className="mb-1.5 text-[12px] font-medium text-fg-2">No pude deducir la categoría. ¿Cuál es?</legend>
+          <div className="flex flex-wrap gap-1.5">
+            {roots.slice(0, 8).map((c) => (
+              <button key={c.id} type="button" onClick={() => patch({ categoryId: c.id, subcategoryId: null })} className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-full bg-surface-2 px-3 text-[12.5px] text-fg-2 transition-colors hover:bg-surface-3 hover:text-fg">
+                <CategoryIcon icon={c.icon} className="size-3.5" />
+                {c.name}
+              </button>
+            ))}
+          </div>
+        </fieldset>
+      )}
+
+      <form
+        onSubmit={(e) => {
+          e.preventDefault()
+          if (fix.trim()) run({ text, previous: p, instruction: fix })
+        }}
+      >
+        <label htmlFor="qa-fix" className="mb-1.5 block text-[12px] font-medium text-fg-2">
+          {missing.length ? `Falta ${missing.join(' y ')}. Decime cómo completarlo o cambiá lo que quieras` : '¿Querés cambiar algo?'}
+        </label>
+        <div className="relative">
+          <Input id="qa-fix" value={fix} onChange={(e) => setFix(e.target.value)} maxLength={300} autoComplete="off" placeholder="Ej: era ayer · poné 5000 · es en efectivo" className="pr-24" />
+          <button type="submit" disabled={!fix.trim() || thinking} className="absolute top-1/2 right-1.5 h-8 -translate-y-1/2 cursor-pointer rounded-full px-3 text-[12.5px] font-medium text-fg-2 hover:bg-surface-3 hover:text-fg disabled:opacity-40">
+            {thinking ? 'Un seg…' : 'Aplicar'}
+          </button>
+        </div>
+        {error && (
+          <p className="mt-1.5 text-[13px] text-critical" role="alert">
+            {error}
+          </p>
+        )}
+      </form>
+
+      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-4">
+        <div className="flex items-center gap-1">
+          <Button type="button" variant="ghost" size="sm" onClick={() => onManual(asDraft(p))}>
+            <Pencil /> Editar detalles
+          </Button>
+          <Button type="button" variant="ghost" size="sm" onClick={() => setProposal(null)}>
+            Empezar de nuevo
+          </Button>
+        </div>
+        <Button ref={confirmRef} type="button" size="lg" loading={pending} disabled={missing.length > 0} onClick={confirm} className="min-w-0 max-w-full flex-1 sm:flex-none">
+          <Check />
+          <span className="truncate">{p.amountCents ? `Confirmar ${money(p.amountCents, { decimals: p.amountCents % 100 !== 0 || undefined })}` : 'Confirmar'}</span>
+        </Button>
+      </div>
+      <p className="text-center text-[11.5px] text-muted">{proposal.external ? `Interpretado con ${proposal.engine}. Se envió solo el texto que escribiste y los nombres de tus categorías.` : 'Interpretado en el servidor de Caudal, sin enviar nada a terceros.'}</p>
+    </div>
   )
 }

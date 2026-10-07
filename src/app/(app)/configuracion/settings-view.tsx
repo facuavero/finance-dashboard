@@ -8,17 +8,19 @@ import { Button } from '@/components/ui/button'
 import { Card, CardBody, CardHeader } from '@/components/ui/card'
 import { Field, Input, NativeSelect } from '@/components/ui/input'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
-import { Segmented } from '@/components/ui/misc'
+import { Segmented, Switch } from '@/components/ui/misc'
+import { applyPrefs } from '@/components/app/prefs-sync'
 import { CategoryIcon, ICON_NAMES } from '@/components/app/icons'
-import { money, parseMoneyInput } from '@/lib/format'
+import { CURRENCIES, money, parseMoneyInput, type Currency } from '@/lib/format'
 import { cn } from '@/lib/utils'
-import { changePasswordAction, closeOtherSessionsAction, saveCategoryAction, updateNumbersAction, updateProfileAction } from '@/modules/settings/actions'
+import { changePasswordAction, closeOtherSessionsAction, saveCategoryAction, updateNumbersAction, updatePreferencesAction, updateProfileAction } from '@/modules/settings/actions'
+import { LANGUAGES, type Prefs } from '@/modules/settings/prefs'
 import { logoutAction } from '@/modules/auth/actions'
 import { PasswordInput } from '@/app/(auth)/password-input'
 
 type Cat = { id: string; name: string; kind: 'expense' | 'income'; parentId: string | null; icon: string }
 
-export function SettingsView({ user, categories, sessions }: { user: { name: string; email: string; initialBalanceCents: number; microThresholdCents: number }; categories: Cat[]; sessions: number }) {
+export function SettingsView({ user, categories, sessions, currency, prefs }: { user: { name: string; email: string; initialBalanceCents: number; microThresholdCents: number }; categories: Cat[]; sessions: number; currency: Currency; prefs: Prefs }) {
   const router = useRouter()
   const [pending, start] = useTransition()
   const [name, setName] = useState(user.name)
@@ -39,6 +41,7 @@ export function SettingsView({ user, categories, sessions }: { user: { name: str
 
   return (
     <div className="grid gap-4 lg:grid-cols-2">
+      <PreferencesCard currency={currency} prefs={prefs} />
       <Card>
         <CardHeader title="Perfil" subtitle={user.email} />
         <CardBody>
@@ -128,6 +131,77 @@ export function SettingsView({ user, categories, sessions }: { user: { name: str
         )}
       </Dialog>
     </div>
+  )
+}
+
+function PrefRow({ title, hint, htmlFor, children }: { title: string; hint: string; htmlFor?: string; children: React.ReactNode }) {
+  return (
+    <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2.5 py-3.5 first:pt-0 last:pb-0">
+      <div className="min-w-0 flex-1 basis-56">
+        <label htmlFor={htmlFor} className="text-[13.5px] font-medium">
+          {title}
+        </label>
+        <p className="mt-0.5 text-[12.5px] text-muted">{hint}</p>
+      </div>
+      {children}
+    </div>
+  )
+}
+
+/** cada cambio se guarda al instante: sin botón de guardar */
+function PreferencesCard({ currency, prefs }: { currency: Currency; prefs: Prefs }) {
+  const router = useRouter()
+  const [cur, setCur] = useState(currency)
+  const [p, setP] = useState(prefs)
+  const [, start] = useTransition()
+
+  const commit = (nextCur: Currency, next: Prefs) => {
+    setCur(nextCur)
+    setP(next)
+    applyPrefs(next, { theme: next.theme !== p.theme, privacy: next.hideAmounts !== p.hideAmounts })
+    start(async () => {
+      const r = await updatePreferencesAction({ ...next, currency: nextCur })
+      if (!r.ok) {
+        setCur(currency)
+        setP(prefs)
+        applyPrefs(prefs)
+        return void toast.error(r.error)
+      }
+      router.refresh()
+    })
+  }
+
+  return (
+    <Card className="lg:col-span-2">
+      <CardHeader title="Preferencias" subtitle="Moneda, idioma y cómo se ve Caudal. Se guardan solas." />
+      <CardBody className="divide-y divide-border">
+        <PrefRow title="Moneda" hint="Cambia el símbolo de todos los montos. No convierte: se muestran los números que cargaste.">
+          <Segmented label="Moneda" value={cur} onChange={(v) => commit(v, p)} options={(Object.keys(CURRENCIES) as Currency[]).map((c) => ({ value: c, label: `${CURRENCIES[c].short}` }))} />
+        </PrefRow>
+        <PrefRow title="Idioma" hint="Por ahora Caudal está en español rioplatense. Inglés viene después." htmlFor="pref-lang">
+          <NativeSelect id="pref-lang" value={p.language} onChange={() => {}} className="w-[220px]">
+            {LANGUAGES.map((l) => (
+              <option key={l.value} value={l.value} disabled={!l.available}>
+                {l.label}
+                {l.available ? '' : ' (pronto)'}
+              </option>
+            ))}
+          </NativeSelect>
+        </PrefRow>
+        <PrefRow title="Tema por defecto" hint="Con qué tema abre Caudal. El botón de la barra sigue sirviendo para cambiarlo al paso.">
+          <Segmented label="Tema" value={p.theme} onChange={(v) => commit(cur, { ...p, theme: v })} options={[{ value: 'dark', label: 'Oscuro' }, { value: 'light', label: 'Claro' }, { value: 'system', label: 'Sistema' }]} />
+        </PrefRow>
+        <PrefRow title="Ocultar montos al abrir" hint="Arranca con el modo privacidad activado. Se destapa con el ojo de la barra.">
+          <Switch aria-label="Ocultar montos al abrir" checked={p.hideAmounts} onCheckedChange={(v) => commit(cur, { ...p, hideAmounts: v })} />
+        </PrefRow>
+        <PrefRow title="Mostrar centavos" hint="$1.234,50 en vez de $1.235.">
+          <Switch aria-label="Mostrar centavos" checked={p.decimals} onCheckedChange={(v) => commit(cur, { ...p, decimals: v })} />
+        </PrefRow>
+        <PrefRow title="Tip del día" hint="Un consejo corto en Inicio que cambia cada vez que entrás.">
+          <Switch aria-label="Tip del día" checked={p.tips} onCheckedChange={(v) => commit(cur, { ...p, tips: v })} />
+        </PrefRow>
+      </CardBody>
+    </Card>
   )
 }
 

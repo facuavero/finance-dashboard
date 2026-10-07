@@ -16,6 +16,13 @@ const serif = localFont({
   display: 'swap',
 })
 
+// cifras: Inter variable con numerales tabulares (reemplaza al mono para montos)
+const figure = localFont({
+  src: [{ path: './fonts/inter-latin-wght-normal.woff2', weight: '100 900', style: 'normal' }],
+  variable: '--font-figure-face',
+  display: 'swap',
+})
+
 export const metadata: Metadata = {
   title: { default: 'Caudal', template: '%s · Caudal' },
   description: 'Tu centro de inteligencia financiera personal: qué pasó con tu plata, por qué, qué puede pasar y qué conviene hacer.',
@@ -29,12 +36,12 @@ export const viewport: Viewport = {
 }
 
 // aplica tema y modo privacidad antes del primer pintado (sin parpadeo).
-// oscuro por defecto: el claro solo si la persona lo eligió
-const bootScript = `(function(){var e=document.documentElement;try{if(localStorage.getItem('caudal-theme')==='light')e.classList.remove('dark');if(localStorage.getItem('caudal-privacy')==='1')e.classList.add('privacy')}catch(_){}})()`
+// oscuro por defecto: el claro solo si la persona lo eligió (a mano o en Settings). 'system' sigue al sistema
+const bootScript = `(function(){var e=document.documentElement;try{var l=localStorage,t=l.getItem('caudal-theme'),p=l.getItem('caudal-theme-pref'),light=t?t==='light':(p==='light'||(p==='system'&&matchMedia('(prefers-color-scheme: light)').matches));if(light)e.classList.remove('dark');var v=l.getItem('caudal-privacy');if(v===null)v=l.getItem('caudal-privacy-default');if(v==='1')e.classList.add('privacy')}catch(_){}})()`
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es-AR" className={`dark ${GeistSans.variable} ${GeistMono.variable} ${serif.variable}`} suppressHydrationWarning>
+    <html lang="es-AR" className={`dark ${GeistSans.variable} ${GeistMono.variable} ${serif.variable} ${figure.variable}`} suppressHydrationWarning>
       <body>
         <Script id="caudal-boot" strategy="beforeInteractive">
           {bootScript}

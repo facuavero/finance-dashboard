@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils'
 
 /** monto con clase .money para el modo privacidad */
 export function Money({ cents, sign, compact, decimals, className, tabular }: { cents: number; sign?: boolean; compact?: boolean; decimals?: boolean; className?: string; tabular?: boolean }) {
-  return <span className={cn('money font-mono tracking-[-0.045em]', tabular && 'num', className)}>{money(cents, { sign, compact, decimals })}</span>
+  return <span className={cn('money font-figure tracking-[-0.02em]', tabular && 'num', className)}>{money(cents, { sign, compact, decimals })}</span>
 }
 
 /**

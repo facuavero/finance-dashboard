@@ -17,7 +17,7 @@ export function UpcomingList({ items, today, limit = 6 }: { items: UpcomingItem[
       {items.slice(0, limit).map((i) => (
         <li key={i.key} className="flex items-center gap-3.5 py-3">
           <div className="flex size-11 shrink-0 flex-col items-center justify-center rounded-2xl bg-surface-2 leading-none">
-            <p className="font-mono text-[14px] font-medium">{dateShort(i.date).split(' ')[0]}</p>
+            <p className="font-figure text-[14px] font-medium">{dateShort(i.date).split(' ')[0]}</p>
             <p className="mt-0.5 text-[10px] text-muted uppercase">{dateShort(i.date).split(' ')[1]}</p>
           </div>
           <div className="min-w-0 flex-1">

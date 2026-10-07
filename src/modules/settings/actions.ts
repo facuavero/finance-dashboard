@@ -9,6 +9,8 @@ import { newId } from '@/lib/ids'
 import { SESSION_COOKIE, requireUser, sha256 } from '@/modules/auth/session'
 import { hashPassword, verifyPassword } from '@/modules/auth/password'
 import { PASSWORD_RULES } from '@/modules/auth/validation'
+import { CURRENCIES, type Currency } from '@/lib/format'
+import { PREFS_COOKIE, type Prefs } from './prefs'
 
 type R = { ok: true; message?: string } | { ok: false; error: string }
 const done = () => revalidatePath('/', 'layout')
@@ -27,6 +29,27 @@ export async function updateNumbersAction(input: { initialBalanceCents?: number;
   const p = z.object({ initialBalanceCents: z.number().int().min(-1e13).max(1e13).optional(), microThresholdCents: z.number().int().min(100_00).max(1_000_000_00).optional() }).safeParse(input)
   if (!p.success) return { ok: false, error: 'Valor fuera de rango' }
   await (await getDb()).update(schema.users).set(p.data).where(eq(schema.users.id, user.id))
+  done()
+  return { ok: true }
+}
+
+const prefsSchema = z.object({
+  currency: z.enum(Object.keys(CURRENCIES) as [Currency, ...Currency[]]),
+  theme: z.enum(['dark', 'light', 'system']),
+  hideAmounts: z.boolean(),
+  decimals: z.boolean(),
+  tips: z.boolean(),
+  language: z.literal('es-AR'),
+})
+
+/** moneda en el usuario (viaja con la cuenta); el resto en una cookie por dispositivo */
+export async function updatePreferencesAction(input: Prefs & { currency: Currency }): Promise<R> {
+  const user = await requireUser()
+  const p = prefsSchema.safeParse(input)
+  if (!p.success) return { ok: false, error: 'Preferencias inválidas' }
+  const { currency, ...prefs } = p.data
+  if (currency !== user.currency) await (await getDb()).update(schema.users).set({ currency }).where(eq(schema.users.id, user.id))
+  ;(await cookies()).set(PREFS_COOKIE, JSON.stringify(prefs), { path: '/', maxAge: 60 * 60 * 24 * 365, sameSite: 'lax', httpOnly: false })
   done()
   return { ok: true }
 }

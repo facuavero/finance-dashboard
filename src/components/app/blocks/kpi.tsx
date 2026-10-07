@@ -17,7 +17,7 @@ export function Kpi({ label, cents, ratio, delta, goodWhenUp, help, deltaLabel, 
         </Tip>
       </div>
       <p className="mt-3 text-[26px] leading-none font-medium">
-        {cents !== undefined ? <Money cents={cents} /> : <span className="money font-mono tracking-[-0.03em]">{pct(ratio ?? null)}</span>}
+        {cents !== undefined ? <Money cents={cents} /> : <span className="money font-figure tracking-[-0.02em]">{pct(ratio ?? null)}</span>}
       </p>
       <Delta ratio={delta} goodWhenUp={goodWhenUp} label={deltaLabel} unit={deltaUnit} className="mt-3" />
     </Card>

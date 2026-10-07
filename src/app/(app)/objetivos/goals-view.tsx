@@ -12,6 +12,7 @@ import { ConfirmDialog } from '@/components/ui/alert-dialog'
 import { Field, Input } from '@/components/ui/input'
 import { Menu, MenuContent, MenuItem, MenuTrigger, Segmented } from '@/components/ui/misc'
 import { EmptyState, Meter, PageHeader } from '@/components/app/states'
+import { AskAi } from '@/components/app/ask-ai'
 import { GOAL_STATE } from '@/components/app/blocks/goals-mini'
 import { Money } from '@/components/app/money'
 import { dateLong, money, parseMoneyInput, pct } from '@/lib/format'
@@ -37,7 +38,7 @@ export function GoalsView({ goals, capacityCents, today, openNew }: { goals: Goa
 
   return (
     <>
-      <PageHeader title="Objetivos" description="Para qué ahorrás. Te decimos cuánto aportar por mes y si vas en camino." actions={<Button onClick={() => setEditing({})}><Plus /> Nuevo objetivo</Button>} />
+      <PageHeader title="Objetivos" description="Para qué ahorrás. Te decimos cuánto aportar por mes y si vas en camino." actions={<><AskAi topic="objetivos" suggestions={['¿Voy en camino con mis objetivos?', '¿Cuánto tendría que aportar por mes?', '¿Cuál objetivo priorizo?']} /><Button onClick={() => setEditing({})}><Plus /> Nuevo objetivo</Button></>} />
 
       {active.length > 0 && (
         <Card className="mb-5 flex flex-col gap-3 p-5 sm:flex-row sm:items-center">

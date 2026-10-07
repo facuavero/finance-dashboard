@@ -1,3 +1,4 @@
+import { AskAi } from '@/components/app/ask-ai'
 import type { Metadata } from 'next'
 import { BellOff } from 'lucide-react'
 import { Card } from '@/components/ui/card'
@@ -23,7 +24,7 @@ export default async function Alertas() {
   const { alerts, hiddenAlerts: hidden } = await getAppData()
   return (
     <>
-      <PageHeader title="Alertas" description="Ordenadas por importancia. Agrupamos las del mismo tipo y cada una aparece una sola vez por período: si la descartás, no vuelve hasta el próximo." />
+      <PageHeader title="Alertas" description="Ordenadas por importancia. Agrupamos las del mismo tipo y cada una aparece una sola vez por período: si la descartás, no vuelve hasta el próximo." actions={<AskAi topic="alertas" suggestions={["¿Qué alerta debería atender primero?", "¿Qué alertas son las más urgentes y por qué?", "¿Cuánto me cuestan los gastos que crecieron?"]} />} />
       {alerts.length ? (
         <AlertsView alerts={alerts.map((a) => ({ ...a, typeLabel: TYPE_LABEL[a.type] }))} hidden={hidden} />
       ) : (

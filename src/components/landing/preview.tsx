@@ -105,9 +105,9 @@ export function ProductPreview() {
               <div className="flex flex-wrap items-start justify-between gap-2 px-4 pt-4 sm:px-5">
                 <div>
                   <p className="font-mono text-[10px] tracking-[0.08em] text-muted uppercase">Capital disponible</p>
-                  <p className="mt-2 font-mono text-[32px] leading-none font-medium tracking-[-0.05em] sm:text-[40px]">$3.724.731</p>
+                  <p className="mt-2 font-figure text-[32px] leading-none font-medium tracking-[-0.035em] sm:text-[40px]">$3.724.731</p>
                   <p className="mt-2 text-[11.5px] text-muted">
-                    <span className="font-mono text-fg">+$1.157.701</span> desde el 1 de octubre · cierre estimado <span className="font-mono text-fg-2">$2.623.042</span>
+                    <span className="font-figure text-fg">+$1.157.701</span> desde el 1 de octubre · cierre estimado <span className="font-figure text-fg-2">$2.623.042</span>
                   </p>
                 </div>
                 <TrendLegend />
@@ -132,7 +132,7 @@ export function ProductPreview() {
                   return (
                     <div key={k.label} className={cn('px-4 py-3 sm:px-5', i % 2 === 1 && 'border-l border-border', i >= 2 && 'border-t border-border sm:border-t-0', i === 2 && 'sm:border-l')}>
                       <p className="font-mono text-[9.5px] tracking-[0.08em] text-muted uppercase">{k.label}</p>
-                      <p className="mt-1.5 font-mono text-[15px] leading-none font-medium tracking-[-0.045em] sm:text-[17px]">{k.value}</p>
+                      <p className="mt-1.5 font-figure text-[15px] leading-none font-medium tracking-[-0.025em] sm:text-[17px]">{k.value}</p>
                       <p className="mt-1.5 flex items-center gap-1 text-[11px] font-medium text-fg-2">
                         <Icon className="size-3 shrink-0" aria-hidden />
                         {k.delta}
