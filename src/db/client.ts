@@ -17,6 +17,11 @@ async function connect(): Promise<DB> {
     return drizzle(neon(url), { schema }) as unknown as DB
   }
 
+  // en workers no hay disco ni tcp: sin una url de neon, pglite y pg revientan con "operation not permitted". mejor decirlo claro.
+  if (typeof navigator !== 'undefined' && navigator.userAgent === 'Cloudflare-Workers') {
+    throw new Error(url ? 'DATABASE_URL no es una url de neon (tiene que contener .neon.tech). en workers no anda postgres por tcp.' : 'falta DATABASE_URL en el worker. cargala como secreto: npx wrangler secret put DATABASE_URL')
+  }
+
   // postgres normal por tcp (servidor node). corre las migraciones al arrancar.
   // los imports van ocultos al bundler a proposito: en workers no hay tcp y pg rompe el build.
   if (url) {
