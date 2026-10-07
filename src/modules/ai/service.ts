@@ -61,7 +61,12 @@ Reglas:
 - Explicá el razonamiento con los datos del usuario, nunca consejos genéricos.
 - Si una recomendación es sobre una suscripción, sugerí revisarla. Nunca digas que hay que cancelarla.
 - Las proyecciones son estimaciones, no garantías. Sobre inversiones no des asesoramiento personalizado ni nombres de productos concretos.
-- Montos con formato argentino: $42.000.`
+- Montos con formato argentino: $42.000.
+- Sé conciso: andá directo al punto, sin introducciones ni repetir datos que no aportan.
+- Texto plano. Sin markdown: nada de **, listas ni títulos.`
+
+/** por si el modelo mete markdown igual: la pantalla muestra texto plano */
+const plain = (s: string) => s.replace(/\*\*|__|`/g, '').trim()
 
 type LlmOut = {
   resumen: string
@@ -108,7 +113,7 @@ export async function generateReport(
     const text = await complete(engine, {
       system: SYSTEM,
       json: true,
-      user: `Datos del usuario (JSON):\n${JSON.stringify(payload)}\n\nDevolvé SOLO un JSON con esta forma:\n{"resumen": "2 o 3 frases: qué pasó este mes y por qué", "recomendaciones": [{"id": "mismo id", "problema": "...", "explicacion": "razonamiento con sus datos", "accion": "qué hacer, concreto", "prioridad": "alta|media|baja"}], "proximas_semanas": "1 o 2 frases sobre lo que viene, o null"}\nIncluí todas las recomendaciones recibidas, en el orden de prioridad que te parezca.`,
+      user: `Datos del usuario (JSON):\n${JSON.stringify(payload)}\n\nDevolvé SOLO un JSON con esta forma:\n{"resumen": "máximo 2 frases cortas: qué pasó este mes y por qué", "recomendaciones": [{"id": "mismo id", "problema": "una frase", "explicacion": "1 o 2 frases con sus datos", "accion": "una frase, concreta", "prioridad": "alta|media|baja"}], "proximas_semanas": "1 frase sobre lo que viene, o null"}\nIncluí todas las recomendaciones recibidas, en el orden de prioridad que te parezca.`,
     })
     const out = parseJson<LlmOut>(text)
     const byId = new Map(recs.map((r) => [r.id, r]))
@@ -118,9 +123,9 @@ export async function generateReport(
       if (!orig) continue // ids inventados se descartan
       merged.push({
         ...orig, // impacto, evidencia y link quedan los calculados
-        problem: r.problema?.trim() || orig.problem,
-        explanation: r.explicacion?.trim() || orig.explanation,
-        action: r.accion?.trim() || orig.action,
+        problem: plain(r.problema ?? '') || orig.problem,
+        explanation: plain(r.explicacion ?? '') || orig.explanation,
+        action: plain(r.accion ?? '') || orig.action,
         priority: ['alta', 'media', 'baja'].includes(r.prioridad) ? r.prioridad : orig.priority,
       })
       byId.delete(r.id)
@@ -130,9 +135,9 @@ export async function generateReport(
       engine: `${engine.label} · ${engine.model}`,
       external: true,
       generatedAt: new Date().toISOString(),
-      summary: out.resumen?.trim() || base.summary,
+      summary: plain(out.resumen ?? '') || base.summary,
       recommendations: merged,
-      upcoming: out.proximas_semanas?.trim() || base.upcoming,
+      upcoming: plain(out.proximas_semanas ?? '') || base.upcoming,
       note: null,
     }
     await db.insert(schema.aiReports).values({ id: newId(), userId: user.id, engine: report.engine, inputHash: hash, output: report })
@@ -149,12 +154,12 @@ export async function answerQuestion(user: { aiExternalEnabled: boolean }, ctx: 
   if (engine && user.aiExternalEnabled && ctx.hasData) {
     try {
       const text = await complete(engine, {
-        system: `${SYSTEM}\nRespondé en 2 a 5 frases. Si los datos no alcanzan para responder, decilo.`,
+        system: `${SYSTEM}\nRespondé en 1 a 3 frases. Empezá con la respuesta directa a la pregunta, después, solo si hace falta, un dato o una acción. Si los datos no alcanzan para responder, decilo en una frase. Si es un saludo, saludá en una línea.`,
         json: false,
         maxTokens: 700,
         user: `Datos del usuario (JSON):\n${JSON.stringify(aiPayload(ctx, recs, combined))}\n\nPregunta: ${question.slice(0, 500)}`,
       })
-      return { answer: text.trim(), engine: `${engine.label} · ${engine.model}` }
+      return { answer: plain(text), engine: `${engine.label} · ${engine.model}` }
     } catch (err) {
       console.error('[caudal] ia externa falló', err)
     }
