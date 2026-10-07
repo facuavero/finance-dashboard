@@ -1,7 +1,7 @@
 import { money, pct } from '@/lib/format'
 import type { FinancialContext } from '@/modules/analytics/context'
 
-export type Tip = { id: string; text: string; /** de dónde sale: tus datos o un consejo general */ basis: 'datos' | 'general' }
+export type Tip = { id: string; text: string; /** de dónde sale: la IA con tus datos, tus datos por reglas o un consejo general */ basis: 'ia' | 'datos' | 'general'; goal?: 'crecer' | 'gastar-menos' | 'fuga'; engine?: string }
 
 const GENERAL: string[] = [
   'La regla 50/30/20 es un punto de partida: 50 % necesidades, 30 % gustos, 20 % ahorro. Ajustala a tu realidad, pero tené un número.',

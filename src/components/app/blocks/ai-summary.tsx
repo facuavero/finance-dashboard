@@ -1,13 +1,12 @@
 import Link from 'next/link'
-import { Lightbulb, Sparkles } from 'lucide-react'
+import { Sparkles } from 'lucide-react'
 import { Delta, Money } from '@/components/app/money'
 import { getAppData } from '@/modules/app/data'
 import { generateReport } from '@/modules/ai/service'
 import { ruleSummary } from '@/modules/ai/rules'
-import type { Tip } from '@/modules/insights/tips'
 import { monthName, pct } from '@/lib/format'
 
-function Frame({ text, engine, note, pending, facts, tip }: { text: string; engine: string; note?: string | null; pending?: boolean; facts: React.ReactNode; tip: Tip | null }) {
+function Frame({ text, engine, note, pending, facts, tip }: { text: string; engine: string; note?: string | null; pending?: boolean; facts: React.ReactNode; tip: React.ReactNode }) {
   return (
     // "daily recap" de fey: prosa protagonista sobre un brillo rubí
     <section aria-labelledby="ai-summary-title" className="relative overflow-hidden rounded-card border border-border bg-surface p-6 sm:p-7">
@@ -29,15 +28,7 @@ function Frame({ text, engine, note, pending, facts, tip }: { text: string; engi
         </Link>
         {note && <span className="text-muted">{note}</span>}
       </div>
-      {tip && (
-        <aside aria-label="Tip del día" className="relative mt-5 flex gap-3 rounded-2xl bg-surface-2 px-4 py-3.5">
-          <Lightbulb className="mt-0.5 size-4 shrink-0 text-accent" aria-hidden />
-          <div className="min-w-0">
-            <p className="label-caps !text-[10px]">Tip{tip.basis === 'datos' ? ' · según tus datos' : ''}</p>
-            <p className="money mt-1 text-[13.5px] leading-relaxed text-fg-2">{tip.text}</p>
-          </div>
-        </aside>
-      )}
+      {tip}
     </section>
   )
 }
@@ -78,13 +69,13 @@ async function SummaryFacts() {
   )
 }
 
-export async function AiSummary({ tip }: { tip: Tip | null }) {
+export async function AiSummary({ tip }: { tip: React.ReactNode }) {
   const { db, user, ctx, recommendations, combined } = await getAppData()
   const report = await generateReport(db, user, ctx, recommendations, combined)
   return <Frame text={report.summary} engine={report.engine} note={report.external ? null : report.note} facts={<SummaryFacts />} tip={tip} />
 }
 
-export async function AiSummaryFallback({ tip }: { tip: Tip | null }) {
+export async function AiSummaryFallback({ tip }: { tip: React.ReactNode }) {
   const { ctx } = await getAppData()
   return <Frame text={ruleSummary(ctx)} engine="" pending facts={<SummaryFacts />} tip={tip} />
 }

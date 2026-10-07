@@ -54,6 +54,16 @@ export async function updatePreferencesAction(input: Prefs & { currency: Currenc
   return { ok: true }
 }
 
+/** la IA preguntó por la moneda y la persona eligió: cambia solo la moneda de la cuenta */
+export async function setCurrencyAction(currency: Currency): Promise<R> {
+  const user = await requireUser()
+  const c = z.enum(Object.keys(CURRENCIES) as [Currency, ...Currency[]]).safeParse(currency)
+  if (!c.success) return { ok: false, error: 'Moneda inválida' }
+  if (c.data !== user.currency) await (await getDb()).update(schema.users).set({ currency: c.data }).where(eq(schema.users.id, user.id))
+  done()
+  return { ok: true }
+}
+
 export async function changePasswordAction(current: string, next: string): Promise<R> {
   const user = await requireUser()
   if (!(await verifyPassword(current, user.passwordHash))) return { ok: false, error: 'La contraseña actual no es correcta' }

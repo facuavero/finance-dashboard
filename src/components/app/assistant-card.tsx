@@ -5,13 +5,15 @@ import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { ArrowRight, Check, Paperclip, Sparkles, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { CurrencyAsk } from './currency-ask'
 import { applyPlanAction, assistantPlanAction } from '@/modules/ai/actions'
 import type { Plan } from '@/modules/ai/assistant'
+import type { Ask } from '@/modules/ai/parse-txn'
 import { dateShort, money } from '@/lib/format'
 import { cn } from '@/lib/utils'
 
 type Cat = { id: string; name: string }
-type Proposal = { plan: Plan; engine: string; external: boolean }
+type Proposal = { plan: Plan; engine: string; external: boolean; ask: Ask | null }
 
 const EXAMPLES = ['gasté 4500 en pedidosya ayer', 'cobré el sueldo 1.200.000', 'presupuesto de delivery 50000 por mes', 'objetivo viaje 1.500.000 para diciembre']
 const MAX_FILE = 200_000
@@ -73,7 +75,7 @@ export function AssistantCard({ categories, force }: { categories: Cat[]; force?
     startThinking(async () => {
       const r = await assistantPlanAction(input)
       if (!r.ok) return void setError(r.error)
-      setProposal({ plan: r.plan, engine: r.engine, external: r.external })
+      setProposal({ plan: r.plan, engine: r.engine, external: r.external, ask: r.ask })
       setOff(new Set())
     })
   }
@@ -185,6 +187,7 @@ export function AssistantCard({ categories, force }: { categories: Cat[]; force?
         </form>
       ) : (
         <div className="relative mt-4 space-y-4">
+          {proposal.ask && <CurrencyAsk ask={proposal.ask} onAnswered={() => setProposal({ ...proposal, ask: null })} />}
           <p className="text-[13px] text-fg-2">Esto es lo que voy a cargar. Destildá lo que no quieras.</p>
           {groups.map((g) => {
             const list = rows.filter((r) => r.group === g.id)
@@ -212,7 +215,7 @@ export function AssistantCard({ categories, force }: { categories: Cat[]; force?
             <Button variant="ghost" size="sm" onClick={() => setProposal(null)}>
               Volver a escribir
             </Button>
-            <Button onClick={apply} loading={saving} disabled={!chosen.length}>
+            <Button onClick={apply} loading={saving} disabled={!chosen.length || !!proposal.ask}>
               <Check /> Cargar {chosen.length} {chosen.length === 1 ? 'cosa' : 'cosas'}
             </Button>
           </div>

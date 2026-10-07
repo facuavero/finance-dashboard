@@ -1,9 +1,9 @@
 import { z } from 'zod'
 import { toISO, toDate, type ISODate } from '@/modules/analytics/dates'
 import { availableEngine, complete, parseJson } from './providers'
-import { MAX_CENTS, ruleParseTxn, ruleRefine, type ParseCat, type ParsedTxn } from './parse-txn'
+import { MAX_CENTS, currencyAsk, ruleParseTxn, ruleRefine, type Ask, type CurrencyCode, type ParseCat, type ParsedTxn } from './parse-txn'
 
-export type TxnProposal = { draft: ParsedTxn; engine: string; external: boolean }
+export type TxnProposal = { draft: ParsedTxn; engine: string; external: boolean; ask: Ask | null }
 
 const llmSchema = z.object({
   tipo: z.enum(['gasto', 'ingreso']),
@@ -19,7 +19,7 @@ const llmSchema = z.object({
 const SYSTEM = `Sos el asistente de carga de Caudal, una app de finanzas personales de Argentina.
 Convertís lo que escribe la persona en un movimiento. Devolvés SOLO un JSON, sin texto extra.
 Reglas:
-- "monto" es en pesos (número, sin símbolos). "2 lucas" = 2000, "1,5 palos" = 1500000, "25k" = 25000. Si no hay monto, null. Nunca inventes un monto.
+- "monto" es el número que escribió la persona, sin símbolos. No lo conviertas ni asumas dólares: si no dice USD, dólares o u$s de forma explícita, es plata argentina (pesos). "2 lucas" = 2000, "1,5 palos" = 1500000, "25k" = 25000. Si no hay monto, null. Nunca inventes un monto.
 - "fecha" en formato YYYY-MM-DD. Si no dice fecha, usá la fecha de hoy. "ayer", "el lunes", "el 3" se resuelven contra hoy.
 - "tipo": "gasto" salvo que sea claramente plata que entra (sueldo, cobro, venta, reembolso).
 - "categoria_id" y "subcategoria_id": SOLO ids de la lista que te paso, de tipo coherente con el movimiento. Si ninguna encaja, null. Si elegís subcategoría, categoria_id es su categoría padre.
@@ -63,8 +63,10 @@ const toDraft = (o: z.infer<typeof llmSchema>, cats: ParseCat[], today: ISODate,
  * interpreta el texto. con ia externa (si hay clave y la persona no la desactivó) y, si falla o no hay, con el motor local.
  * lo único que sale hacia la ia: el texto escrito, la fecha de hoy y los nombres de las categorías.
  */
-export async function proposeTxn(opts: { text: string; cats: ParseCat[]; today: ISODate; allowExternal: boolean; previous?: ParsedTxn; instruction?: string }): Promise<TxnProposal> {
+export async function proposeTxn(opts: { text: string; cats: ParseCat[]; today: ISODate; allowExternal: boolean; currency: CurrencyCode; previous?: ParsedTxn; instruction?: string }): Promise<TxnProposal> {
   const { text, cats, today, previous, instruction } = opts
+  // se pregunta una sola vez, con el texto original: las correcciones no la repiten
+  const ask = previous ? null : currencyAsk(text, opts.currency)
   const local = (): ParsedTxn => (previous && instruction ? ruleRefine(previous, instruction, cats, today) : ruleParseTxn(text, cats, today).draft)
   const engine = availableEngine()
   if (engine && opts.allowExternal) {
@@ -73,12 +75,12 @@ export async function proposeTxn(opts: { text: string; cats: ParseCat[]; today: 
         ? `Hoy es ${today}.\nCategorías: ${JSON.stringify(catList(cats))}\nMovimiento actual (JSON propio de la app): ${JSON.stringify(draftToLlm(previous))}\nLa persona pide este cambio: ${JSON.stringify(instruction.slice(0, 300))}\nDevolvé el movimiento completo actualizado con esta forma: ${SHAPE}`
         : `Hoy es ${today}.\nCategorías: ${JSON.stringify(catList(cats))}\nTexto de la persona: ${JSON.stringify(text.slice(0, 300))}\nDevolvé JSON con esta forma: ${SHAPE}`
       const out = llmSchema.parse(parseJson(await complete(engine, { system: SYSTEM, user: prompt, json: true, maxTokens: 600 })))
-      return { draft: toDraft(out, cats, today, previous ?? ruleParseTxn(text, cats, today).draft), engine: `${engine.label} · ${engine.model}`, external: true }
+      return { draft: toDraft(out, cats, today, previous ?? ruleParseTxn(text, cats, today).draft), engine: `${engine.label} · ${engine.model}`, external: true, ask }
     } catch (err) {
       console.error('[caudal] ia externa falló al interpretar el movimiento', err)
     }
   }
-  return { draft: local(), engine: 'Motor de reglas local', external: false }
+  return { draft: local(), engine: 'Motor de reglas local', external: false, ask }
 }
 
 const SHAPE = '{"tipo":"gasto|ingreso","monto":number|null,"fecha":"YYYY-MM-DD","descripcion":string|null,"categoria_id":string|null,"subcategoria_id":string|null,"metodo":"debito|credito|efectivo|transferencia|billetera","frecuencia":"none|weekly|monthly|yearly"}'

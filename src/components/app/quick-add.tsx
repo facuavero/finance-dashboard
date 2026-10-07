@@ -9,11 +9,12 @@ import { Button } from '@/components/ui/button'
 import { Field, Input, NativeSelect } from '@/components/ui/input'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/misc'
 import { CategoryIcon } from './icons'
+import { CurrencyAsk } from './currency-ask'
 import { MAX_AMOUNT_CENTS, currencySymbol, dateLong, money, parseMoneyInput } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import { deleteTransactionsAction, saveTransactionAction } from '@/modules/finance/actions'
 import { parseTxnAction } from '@/modules/ai/actions'
-import type { ParsedTxn } from '@/modules/ai/parse-txn'
+import type { Ask, ParsedTxn } from '@/modules/ai/parse-txn'
 
 export type CatOption = { id: string; name: string; kind: 'expense' | 'income'; parentId: string | null; icon: string; usage: number }
 
@@ -359,7 +360,7 @@ const asDraft = (p: ParsedTxn): Partial<TxnDraft> => ({
 function AiCapture({ categories, today, onDone, onManual }: { categories: CatOption[]; today: string; onDone: () => void; onManual: (d: Partial<TxnDraft>) => void }) {
   const [text, setText] = useState('')
   const [fix, setFix] = useState('')
-  const [proposal, setProposal] = useState<{ draft: ParsedTxn; engine: string; external: boolean } | null>(null)
+  const [proposal, setProposal] = useState<{ draft: ParsedTxn; engine: string; external: boolean; ask: Ask | null } | null>(null)
   const [error, setError] = useState('')
   const [thinking, startThinking] = useTransition()
   const { save, pending } = useSaveTxn(categories)
@@ -375,7 +376,7 @@ function AiCapture({ categories, today, onDone, onManual }: { categories: CatOpt
     startThinking(async () => {
       const r = await parseTxnAction(input)
       if (!r.ok) return void setError(r.error)
-      setProposal({ draft: r.draft, engine: r.engine, external: r.external })
+      setProposal((prev) => ({ draft: r.draft, engine: r.engine, external: r.external, ask: input.previous ? (prev?.ask ?? null) : r.ask }))
       setFix('')
       // Enter vuelve a confirmar sin tocar el mouse
       setTimeout(() => confirmRef.current?.focus(), 0)
@@ -466,6 +467,8 @@ function AiCapture({ categories, today, onDone, onManual }: { categories: CatOpt
         </dl>
       </section>
 
+      {proposal.ask && <CurrencyAsk ask={proposal.ask} onAnswered={() => setProposal({ ...proposal, ask: null })} />}
+
       {!p.categoryId && (
         <fieldset>
           <legend className="mb-1.5 text-[12px] font-medium text-fg-2">No pude deducir la categoría. ¿Cuál es?</legend>
@@ -511,7 +514,7 @@ function AiCapture({ categories, today, onDone, onManual }: { categories: CatOpt
             Empezar de nuevo
           </Button>
         </div>
-        <Button ref={confirmRef} type="button" size="lg" loading={pending} disabled={missing.length > 0} onClick={confirm} className="min-w-0 max-w-full flex-1 sm:flex-none">
+        <Button ref={confirmRef} type="button" size="lg" loading={pending} disabled={missing.length > 0 || !!proposal.ask} onClick={confirm} className="min-w-0 max-w-full flex-1 sm:flex-none">
           <Check />
           <span className="truncate">{p.amountCents ? `Confirmar ${money(p.amountCents, { decimals: p.amountCents % 100 !== 0 || undefined })}` : 'Confirmar'}</span>
         </Button>

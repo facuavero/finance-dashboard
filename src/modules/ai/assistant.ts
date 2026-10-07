@@ -3,7 +3,7 @@ import { z } from 'zod'
 import { MAX_AMOUNT_CENTS } from '@/lib/format'
 import { addMonths, endOfMonth, toDate, toISO, type ISODate } from '@/modules/analytics/dates'
 import { availableEngine, complete, parseJson } from './providers'
-import { amountsIn, MAX_CENTS, norm, ruleParseTxn, type ParseCat } from './parse-txn'
+import { amountsIn, currencyAsk, MAX_CENTS, norm, ruleParseTxn, type Ask, type CurrencyCode, type ParseCat } from './parse-txn'
 
 const iso = z.string().regex(/^\d{4}-\d{2}-\d{2}$/)
 const cents = z.number().int().positive().max(MAX_AMOUNT_CENTS)
@@ -78,7 +78,7 @@ export function rulePlan(text: string, cats: ParseCat[], today: ISODate): Plan {
 const SYSTEM = `Sos el asistente de carga de Caudal, una app de finanzas personales de Argentina.
 Leés texto libre (puede ser una lista, notas o el contenido de un CSV) y lo convertís en movimientos, presupuestos y objetivos. Devolvés SOLO un JSON.
 Reglas:
-- Montos en pesos, números sin símbolos. "2 lucas" = 2000, "25k" = 25000, "1,5 palos" = 1500000. Nunca inventes montos: si falta, null (solo en movimientos).
+- Montos: el número que escribió la persona, sin símbolos y sin convertir. No asumas dólares: si no dice USD, dólares o u$s de forma explícita, es plata argentina (pesos). "2 lucas" = 2000, "25k" = 25000, "1,5 palos" = 1500000. Nunca inventes montos: si falta, null (solo en movimientos).
 - Fechas YYYY-MM-DD. Sin fecha en un movimiento: la de hoy. "ayer", "el lunes", "el 3" se resuelven contra hoy. En un CSV, respetá la fecha de cada fila.
 - Movimiento: tipo "gasto" salvo plata que entra (sueldo, cobro, venta, reembolso). En CSV, un monto negativo es gasto y uno positivo es ingreso.
 - categoria_id y subcategoria_id: SOLO ids de la lista, coherentes con el tipo. Si ninguna encaja, null.
@@ -133,11 +133,12 @@ function fromLlm(raw: z.infer<typeof llm>, cats: ParseCat[], today: ISODate): Pl
   return plan
 }
 
-export type PlanProposal = { plan: Plan; engine: string; external: boolean }
+export type PlanProposal = { plan: Plan; engine: string; external: boolean; ask: Ask | null }
 
 /** con IA externa si hay clave y la persona no la desactivó; si falla o no hay, con el motor local */
-export async function proposePlan(opts: { text: string; cats: ParseCat[]; today: ISODate; allowExternal: boolean }): Promise<PlanProposal> {
+export async function proposePlan(opts: { text: string; cats: ParseCat[]; today: ISODate; allowExternal: boolean; currency: CurrencyCode }): Promise<PlanProposal> {
   const { text, cats, today } = opts
+  const ask = currencyAsk(text, opts.currency)
   const engine = availableEngine()
   if (engine && opts.allowExternal) {
     try {
@@ -146,11 +147,11 @@ export async function proposePlan(opts: { text: string; cats: ParseCat[]; today:
         parseJson(await complete(engine, { system: SYSTEM, json: true, maxTokens: 6000, user: `Hoy es ${today}.\nCategorías: ${JSON.stringify(catList)}\nTexto de la persona:\n"""\n${text.slice(0, 15_000)}\n"""\nDevolvé JSON con esta forma: ${SHAPE}` })),
       )
       const plan = fromLlm(out, cats, today)
-      if (plan.transactions.length + plan.budgets.length + plan.goals.length > 0) return { plan, engine: `${engine.label} · ${engine.model}`, external: true }
+      if (plan.transactions.length + plan.budgets.length + plan.goals.length > 0) return { plan, engine: `${engine.label} · ${engine.model}`, external: true, ask }
     } catch (err) {
       console.error('[caudal] ia externa falló en el asistente', err)
     }
   }
-  return { plan: rulePlan(text, cats, today), engine: 'Motor de reglas local', external: false }
+  return { plan: rulePlan(text, cats, today), engine: 'Motor de reglas local', external: false, ask }
 }
 

@@ -132,7 +132,7 @@ export default async function Estadisticas({ searchParams }: { searchParams: Pro
                         {c.name}
                       </span>
                       <span className="mt-1 block h-1 rounded-full bg-surface-2">
-                        <span className="block h-1 rounded-full bg-chart-1" style={{ width: `${Math.max(1, c.pct * 100)}%` }} />
+                        <span className="bar-grow block h-1 rounded-full bg-chart-1" style={{ width: `${Math.max(1, c.pct * 100)}%` }} />
                       </span>
                     </td>
                     <td className="py-2 text-right font-medium">

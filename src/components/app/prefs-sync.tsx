@@ -23,7 +23,7 @@ const wantsLight = (theme: Prefs['theme']) => theme === 'light' || (theme === 's
 
 /**
  * pasa las preferencias guardadas al DOM. el script de arranque (layout raíz) lee las mismas claves antes del primer pintado.
- * `reset`: el cambio vino de Settings, así que pisa lo que se haya elegido a mano con los botones de la barra.
+ * `reset`: el cambio vino de Configuración, así que pisa lo que se haya elegido a mano con los botones de la barra.
  */
 export function applyPrefs(prefs: Prefs, reset: { theme?: boolean; privacy?: boolean } = {}) {
   const root = document.documentElement

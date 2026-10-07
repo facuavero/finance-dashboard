@@ -48,7 +48,7 @@ export const NAV: { group: string; items: NavItem[] }[] = [
     items: [
       { href: '/integraciones', label: 'Integraciones', icon: Plug },
       { href: '/privacidad', label: 'Privacidad', icon: ShieldCheck },
-      { href: '/configuracion', label: 'Settings', icon: Settings },
+      { href: '/configuracion', label: 'Configuración', icon: Settings },
     ],
   },
 ]

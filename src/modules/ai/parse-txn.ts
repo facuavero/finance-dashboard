@@ -118,7 +118,7 @@ export function dateIn(text: string, today: ISODate): { date: ISODate; span: [nu
   return null
 }
 
-const FILLER = new Set(['gaste', 'gasto', 'pague', 'pago', 'compre', 'compra', 'cobre', 'cobro', 'ingrese', 'ingreso', 'de', 'del', 'en', 'por', 'con', 'el', 'la', 'los', 'las', 'un', 'una', 'y', 'a', 'fue', 'fueron', 'me', 'mi', 'mis', 'pesos', 'ars'])
+const FILLER = new Set(['dolar', 'dolares', 'usd', 'euro', 'euros', 'reales', 'verdes', 'gaste', 'gasto', 'pague', 'pago', 'compre', 'compra', 'cobre', 'cobro', 'ingrese', 'ingreso', 'de', 'del', 'en', 'por', 'con', 'el', 'la', 'los', 'las', 'un', 'una', 'y', 'a', 'fue', 'fueron', 'me', 'mi', 'mis', 'pesos', 'ars'])
 
 export function ruleParseTxn(text: string, cats: ParseCat[], today: ISODate): { draft: ParsedTxn; found: Found } {
   const found: Found = {}
@@ -199,4 +199,49 @@ export function ruleRefine(prev: ParsedTxn, instruction: string, cats: ParseCat[
     paymentMethod: found.payment ? draft.paymentMethod : prev.paymentMethod,
     recurrence: found.recurrence ? draft.recurrence : prev.recurrence,
   }
+}
+
+export type CurrencyCode = 'ARS' | 'USD' | 'EUR' | 'BRL'
+const CURRENCY_NAME: Record<CurrencyCode, string> = { ARS: 'pesos', USD: 'dólares', EUR: 'euros', BRL: 'reales' }
+
+/** la moneda solo cuenta si el texto la dice (usd, dólares, u$s, verdes...). un número pelado no es una moneda */
+export function explicitCurrency(text: string): CurrencyCode | null {
+  const n = norm(text)
+  if (/(?:^|[^a-z])(?:usd|u\$s|us\$|dolar(?:es)?|dls|verdes)(?![a-z])/.test(n)) return 'USD'
+  if (/€|(?:^|[^a-z])(?:eur|euros?)(?![a-z])/.test(n)) return 'EUR'
+  if (/r\$|(?:^|[^a-z])(?:brl|reales)(?![a-z])/.test(n)) return 'BRL'
+  if (/\$|(?:^|[^a-z])(?:ars|pesos?)(?![a-z])/.test(n)) return 'ARS'
+  return null
+}
+
+/** pregunta que la IA le hace a la persona antes de cargar. se responde con un botón */
+export type Ask = { question: string; options: { label: string; currency: CurrencyCode }[] }
+
+/**
+ * 5000 sin más es plata argentina. si la app muestra otra moneda, o el texto dice una moneda distinta a la que muestra la app,
+ * no se adivina: se pregunta. Caudal no convierte, así que la respuesta cambia la moneda con la que se muestran los montos.
+ */
+export function currencyAsk(text: string, display: CurrencyCode): Ask | null {
+  if (!amountsIn(text).length) return null
+  const said = explicitCurrency(text)
+  const shown = CURRENCY_NAME[display]
+  if (said && said !== display) {
+    return {
+      question: `Escribiste ${CURRENCY_NAME[said]}, pero tu Caudal muestra los montos en ${shown}. ¿Cómo lo cargo?`,
+      options: [
+        { label: `Son ${CURRENCY_NAME[said]}: mostrar en ${said}`, currency: said },
+        { label: `Dejar en ${shown}`, currency: display },
+      ],
+    }
+  }
+  if (!said && display !== 'ARS') {
+    return {
+      question: `No dijiste la moneda. Tu Caudal muestra en ${shown}, pero un monto así suele ser en pesos. ¿Qué es?`,
+      options: [
+        { label: 'Son pesos: mostrar en ARS', currency: 'ARS' },
+        { label: `Son ${shown}`, currency: display },
+      ],
+    }
+  }
+  return null
 }

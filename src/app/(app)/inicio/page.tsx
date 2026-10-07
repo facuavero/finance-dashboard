@@ -14,7 +14,7 @@ import { Onboarding } from './onboarding'
 import { AssistantCard } from '@/components/app/assistant-card'
 import { getAppData } from '@/modules/app/data'
 import { upcoming } from '@/modules/insights/upcoming'
-import { pickTip } from '@/modules/insights/tips'
+import { AiTipAside, TipAside } from '@/components/app/blocks/tip'
 import { balanceAt } from '@/modules/analytics/summary'
 import { endOfMonth, previousFullMonths } from '@/modules/analytics/dates'
 import { dateLong, money, monthName, pct } from '@/lib/format'
@@ -52,7 +52,11 @@ export default async function Inicio({ searchParams }: { searchParams: Promise<{
   const monthStartBalance = ctx.forecast.series[0]?.realCents ?? ctx.balanceCents
   const up = upcoming(ctx.recurring, combined, today)
   // un tip distinto en cada visita (la página es dinámica: se vuelve a elegir en cada request)
-  const tip = prefs.tips ? pickTip(ctx) : null
+  const tip = prefs.tips ? (
+    <Suspense fallback={<TipAside tip={null} pending />}>
+      <AiTipAside />
+    </Suspense>
+  ) : null
 
   const kpis = [
     { label: 'Ingresos', cents: m.incomeCents, delta: m.deltas.income.pct, goodWhenUp: true },
@@ -112,7 +116,7 @@ export default async function Inicio({ searchParams }: { searchParams: Promise<{
 
         {/* derecha: feed. por qué pasó y qué viene */}
         <div className="min-w-0 space-y-5">
-          <Suspense fallback={<AiSummaryFallback tip={tip} />}>
+          <Suspense fallback={<AiSummaryFallback tip={prefs.tips ? <TipAside tip={null} pending /> : null} />}>
             <AiSummary tip={tip} />
           </Suspense>
           <Card>

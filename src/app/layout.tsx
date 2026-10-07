@@ -36,7 +36,7 @@ export const viewport: Viewport = {
 }
 
 // aplica tema y modo privacidad antes del primer pintado (sin parpadeo).
-// oscuro por defecto: el claro solo si la persona lo eligió (a mano o en Settings). 'system' sigue al sistema
+// oscuro por defecto: el claro solo si la persona lo eligió (a mano o en Configuración). 'system' sigue al sistema
 const bootScript = `(function(){var e=document.documentElement;try{var l=localStorage,t=l.getItem('caudal-theme'),p=l.getItem('caudal-theme-pref'),light=t?t==='light':(p==='light'||(p==='system'&&matchMedia('(prefers-color-scheme: light)').matches));if(light)e.classList.remove('dark');var v=l.getItem('caudal-privacy');if(v===null)v=l.getItem('caudal-privacy-default');if(v==='1')e.classList.add('privacy')}catch(_){}})()`
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

@@ -45,7 +45,7 @@ export function Meter({ value, state = 'ok', label, className }: { value: number
   const color = state === 'over' ? 'bg-accent-solid' : state === 'near' ? 'bg-warning-mark' : 'bg-fg'
   return (
     <div className={cn('h-1 w-full overflow-hidden rounded-full bg-surface-3', className)} role="progressbar" aria-label={label} aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(Math.min(1, value) * 100)}>
-      <div className={cn('h-full rounded-full transition-[width] duration-500', color)} style={{ width: `${Math.max(2, Math.min(100, value * 100))}%` }} />
+      <div className={cn('bar-grow h-full rounded-full transition-[width] duration-500', color)} style={{ width: `${Math.max(2, Math.min(100, value * 100))}%` }} />
     </div>
   )
 }
