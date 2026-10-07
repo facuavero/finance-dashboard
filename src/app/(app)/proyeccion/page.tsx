@@ -53,7 +53,7 @@ export default async function Proyeccion() {
           </ul>
         </Card>
         <Card>
-          <CardHeader title="Saldo día por día" subtitle={`${monthName(today)}: real hasta hoy, estimado después`} action={<Legend items={[{ label: 'Real', color: 'var(--accent)' }, { label: 'Estimado', color: 'var(--accent)', kind: 'dashed' }]} />} />
+          <CardHeader title="Saldo día por día" subtitle={`${monthName(today)}: real hasta hoy, estimado después`} action={<Legend items={[{ label: 'Real', color: 'var(--chart-1)' }, { label: 'Estimado', color: 'var(--chart-1)', kind: 'dashed' }]} />} />
           <CardBody>
             <CapitalChart data={f.series.map((p) => ({ label: p.date, real: p.realCents, est: p.estimatedCents }))} labels="day" height={230} />
           </CardBody>
@@ -99,7 +99,7 @@ export default async function Proyeccion() {
         <div>
           <SectionLabel>Evolución probable del capital</SectionLabel>
           <Card className="mt-2">
-            <CardHeader title="Próximos 6 meses" subtitle="Si seguís con el ahorro promedio de los últimos 3 meses. La banda muestra la variación habitual." action={<Legend items={[{ label: 'Real', color: 'var(--accent)' }, { label: 'Estimado', color: 'var(--accent)', kind: 'dashed' }]} />} />
+            <CardHeader title="Próximos 6 meses" subtitle="Si seguís con el ahorro promedio de los últimos 3 meses. La banda muestra la variación habitual." action={<Legend items={[{ label: 'Real', color: 'var(--chart-1)' }, { label: 'Estimado', color: 'var(--chart-1)', kind: 'dashed' }]} />} />
             <CardBody>
               <CapitalChart data={projection.map((p) => ({ label: p.month, real: p.realCents, est: p.estimatedCents, low: p.lowCents, high: p.highCents }))} labels="month" height={220} />
             </CardBody>

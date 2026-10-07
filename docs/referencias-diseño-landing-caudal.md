@@ -40,7 +40,7 @@ apps que más aportan: mercury, midday, origin, ramp, titan, fruitful, cash app,
 - ojo: gradiente y glass, justo lo que nuestra propuesta descarta.
 
 **qué adaptar a caudal:**
-- hero sobrio sobre el fondo cálido de la app (`--bg`), titular grande en geist con tracking negativo, sin foto de stock (origin y current venden con foto, caudal vende con producto).
+- hero sobrio sobre el fondo de la app (`--bg`), titular grande en geist con tracking negativo, sin foto de stock (origin y current venden con foto, caudal vende con producto).
 - label chico en mono mayúscula arriba del titular (origin, titan). ya es el `label-caps` de la app.
 - un cta primario negro y uno secundario (titan). en vez de "see why" el secundario es "crear cuenta gratis" y el primario es la demo (ver categoría 2).
 - fila de hechos en mono debajo del hero (titan), pero con datos verificables del producto, nunca métricas de negocio inventadas.
@@ -264,7 +264,7 @@ apps que más aportan: mercury, midday, origin, ramp, titan, fruitful, cash app,
 ## conclusiones para la landing
 
 1. **el producto es la prueba.** sin testimonios ni números inventados. el hero muestra el inicio de la app y el cta principal abre la demo en un click (mercury, midday).
-2. **mismo sistema visual que la app**: fondo cálido, cards blancas con borde de 1px, un solo acento azul, botón primario en tinta, geist + geist mono para labels. la landing no puede prometer una estética que la app no tiene.
+2. **mismo sistema visual que la app**: grises, cards blancas con borde de 1px, un solo color (rojo rubí desde la v2 del sistema), botón primario en tinta, geist + geist mono para labels. la landing no puede prometer una estética que la app no tiene.
 3. **titular que explica la diferencia**: caudal no anota gastos, responde 4 preguntas. esa estructura ordena la página (titan "our difference", dovetail).
 4. **fragmentos de ui en vez de ilustraciones** para cada feature (mercury).
 5. **ia contada como cadena con números calculados**: motor → explicación → acción (dovetail + hex). decir qué motor y que se apaga (cursor).

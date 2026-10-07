@@ -70,8 +70,8 @@ export default async function Inicio({ searchParams }: { searchParams: Promise<{
             </div>
             <Legend
               items={[
-                { label: 'Real', color: 'var(--accent)' },
-                { label: 'Estimado', color: 'var(--accent)', kind: 'dashed' },
+                { label: 'Real', color: 'var(--chart-1)' },
+                { label: 'Estimado', color: 'var(--chart-1)', kind: 'dashed' },
               ]}
             />
           </div>

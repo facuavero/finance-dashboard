@@ -87,7 +87,7 @@ function NavLink({ item, badge, onNavigate }: { item: NavItem; badge?: number; o
     >
       <Icon className={cn('size-4 shrink-0', active ? 'text-accent' : 'text-muted group-hover:text-fg-2')} aria-hidden />
       <span className="flex-1 truncate">{item.label}</span>
-      {badge ? <span className="num rounded-full bg-critical px-1.5 text-[11px] leading-[18px] font-semibold text-white">{badge}</span> : null}
+      {badge ? <span className="num rounded-full bg-accent-solid px-1.5 text-[11px] leading-[18px] font-semibold text-on-accent">{badge}</span> : null}
     </Link>
   )
 }
@@ -216,7 +216,7 @@ export function Shell({ user, alerts, alertCount, children }: { user: { name: st
                     {alerts.slice(0, 5).map((a) => (
                       <li key={a.key}>
                         <Link href={a.href} className="flex gap-3 px-4 py-3 hover:bg-surface-2">
-                          <span className={cn('mt-1.5 size-2 shrink-0 rounded-full', a.severity === 'critical' ? 'bg-critical' : a.severity === 'warning' ? 'bg-warning-mark' : a.severity === 'positive' ? 'bg-positive' : 'bg-accent')} aria-hidden />
+                          <span className={cn('mt-1.5 size-2 shrink-0 rounded-full', a.severity === 'critical' ? 'bg-critical' : a.severity === 'warning' ? 'bg-warning-mark' : a.severity === 'positive' ? 'bg-positive' : 'bg-muted')} aria-hidden />
                           <span className="min-w-0">
                             <span className="block text-[13px] font-medium">{a.title}</span>
                             <span className="money mt-0.5 block text-[12px] text-muted">{a.body}</span>

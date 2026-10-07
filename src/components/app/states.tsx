@@ -42,7 +42,7 @@ export function RealTag({ className }: { className?: string }) {
 
 /** barra de progreso: el relleno lleva el estado, la pista es el mismo tono más claro */
 export function Meter({ value, state = 'ok', label, className }: { value: number; state?: 'ok' | 'near' | 'over' | 'done'; label: string; className?: string }) {
-  const color = state === 'over' ? 'bg-critical' : state === 'near' ? 'bg-warning-mark' : state === 'done' ? 'bg-positive' : 'bg-accent'
+  const color = state === 'over' ? 'bg-critical' : state === 'near' ? 'bg-warning-mark' : 'bg-fg'
   return (
     <div className={cn('h-1.5 w-full overflow-hidden rounded-full bg-surface-3', className)} role="progressbar" aria-label={label} aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(Math.min(1, value) * 100)}>
       <div className={cn('h-full rounded-full transition-[width] duration-500', color)} style={{ width: `${Math.max(2, Math.min(100, value * 100))}%` }} />

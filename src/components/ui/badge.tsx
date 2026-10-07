@@ -9,7 +9,7 @@ const badge = cva('inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-
       accent: 'bg-accent-soft text-accent',
       positive: 'bg-positive-soft text-positive',
       warning: 'bg-warning-soft text-warning',
-      critical: 'bg-critical-soft text-critical',
+      critical: 'bg-accent-solid text-on-accent',
       outline: 'border border-border text-fg-2',
     },
   },

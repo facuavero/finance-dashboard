@@ -28,7 +28,7 @@ export default async function AuthLayout({ children }: { children: React.ReactNo
           <div className="mt-8 rounded-xl border border-border bg-surface p-4 shadow-sm">
             <div className="flex items-center gap-2 text-[13px] font-medium">
               <Sparkles className="size-4 text-accent" aria-hidden /> Recomendación
-              <span className="ml-auto rounded-full bg-critical-soft px-2 py-0.5 text-[11px] text-critical">prioridad alta</span>
+              <span className="ml-auto rounded-full bg-accent-solid px-2 py-0.5 text-[11px] text-on-accent">prioridad alta</span>
             </div>
             <p className="mt-2 text-[15px] font-medium">Detectamos $31.500 mensuales en delivery.</p>
             <p className="mt-1 text-[13px] text-muted">Reducirlo un 40% representaría aproximadamente $12.600 de ahorro mensual y $151.200 al año.</p>

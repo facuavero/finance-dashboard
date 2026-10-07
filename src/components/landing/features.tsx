@@ -95,7 +95,7 @@ function Budget() {
         <span className="num font-semibold text-fg">$57.100</span> de $170.000
       </p>
       <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-surface-3">
-        <div className="h-full w-[34%] rounded-full bg-accent" />
+        <div className="h-full w-[34%] rounded-full bg-fg" />
       </div>
       <p className="mt-2 text-[12px] text-muted">Al ritmo actual se agota el 21 oct.</p>
     </Card>

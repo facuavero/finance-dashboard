@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils'
 
 const ICON = { critical: CircleAlert, warning: TriangleAlert, info: Info, positive: Lightbulb }
 const LABEL = { critical: 'Urgente', warning: 'Atención', info: 'Info', positive: 'Oportunidad' }
-const TONE = { critical: 'text-critical bg-critical-soft', warning: 'text-warning bg-warning-soft', info: 'text-accent bg-accent-soft', positive: 'text-positive bg-positive-soft' }
+const TONE = { critical: 'text-on-accent bg-accent-solid', warning: 'text-warning bg-warning-soft', info: 'text-fg-2 bg-surface-2', positive: 'text-fg bg-surface-2' }
 
 export function AlertRow({ alert, compact, actions }: { alert: Alert; compact?: boolean; actions?: React.ReactNode }) {
   const Icon = ICON[alert.severity]

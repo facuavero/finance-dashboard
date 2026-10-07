@@ -15,13 +15,13 @@ export function TrendMock({ points, estimateFrom, min, max, className }: { point
   const path = (pts: typeof xy) => pts.map(([x, y], i) => `${i ? 'L' : 'M'}${x.toFixed(2)},${y.toFixed(2)}`).join(' ')
   const real = xy.slice(0, estimateFrom + 1)
   const est = xy.slice(estimateFrom)
-  const stroke = { fill: 'none', stroke: 'var(--accent)', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round', vectorEffect: 'non-scaling-stroke' } as const
+  const stroke = { fill: 'none', stroke: 'var(--chart-1)', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round', vectorEffect: 'non-scaling-stroke' } as const
   return (
     <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" className={cn('block w-full overflow-visible', className)} aria-hidden>
       {[0, 0.5, 1].map((f) => (
         <line key={f} x1="0" x2={W} y1={H * f} y2={H * f} stroke="var(--grid)" strokeWidth="1" vectorEffect="non-scaling-stroke" />
       ))}
-      <path d={`${path(real)} L${real[real.length - 1][0]},${H} L0,${H} Z`} fill="var(--accent)" fillOpacity="0.08" />
+      <path d={`${path(real)} L${real[real.length - 1][0]},${H} L0,${H} Z`} fill="var(--chart-1)" fillOpacity="0.08" />
       <path d={path(real)} {...stroke} />
       <path d={path(est)} {...stroke} strokeDasharray="5 4" strokeOpacity="0.7" />
     </svg>
@@ -33,13 +33,13 @@ export function TrendLegend({ className }: { className?: string }) {
     <span className={cn('flex items-center gap-3 text-[12px] text-fg-2', className)}>
       <span className="inline-flex items-center gap-1.5">
         <svg width="14" height="4" aria-hidden>
-          <line x1="0" y1="2" x2="14" y2="2" stroke="var(--accent)" strokeWidth="2" />
+          <line x1="0" y1="2" x2="14" y2="2" stroke="var(--chart-1)" strokeWidth="2" />
         </svg>
         Real
       </span>
       <span className="inline-flex items-center gap-1.5">
         <svg width="14" height="4" aria-hidden>
-          <line x1="0" y1="2" x2="14" y2="2" stroke="var(--accent)" strokeWidth="2" strokeDasharray="3 2" />
+          <line x1="0" y1="2" x2="14" y2="2" stroke="var(--chart-1)" strokeWidth="2" strokeDasharray="3 2" />
         </svg>
         Estimado
       </span>
@@ -87,7 +87,7 @@ export function ProductPreview() {
           <Logo className="mb-4 px-1.5 [&_svg]:size-6 [&>span:last-child]:text-[15px]" />
           {NAV.map(({ label, icon: Icon }, i) => (
             <span key={label} className={cn('flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-[13px]', i === 0 ? 'border border-border bg-surface font-medium text-fg' : 'text-fg-2')}>
-              <Icon className="size-4 text-muted" aria-hidden />
+              <Icon className={cn('size-4', i === 0 ? 'text-accent' : 'text-muted')} aria-hidden />
               {label}
             </span>
           ))}

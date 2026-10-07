@@ -18,24 +18,38 @@ base: [referencias-diseño-finanzas-personales.md](./referencias-diseño-finanza
 ## 2. sistema visual
 
 ### color
+
+**v2 (2026-10): grises, blanco, negro y un solo color, rojo rubí.** reemplaza la base cálida con acento azul de la v1.
+
+el rojo marca dos cosas y nada más:
+1. **interacción**: ítem activo, links, switches, checkboxes, sliders, logo. el foco no: va en tinta, porque un borde rojo en un input se lee como error.
+2. **atención**: excedido, anomalía, prioridad alta, lo que empeoró contra el período anterior.
+
+lo bueno no se pinta: va en tinta, con flecha o ícono y texto. así el rojo siempre significa "mirá acá".
+
 | token | light | dark | uso |
 |---|---|---|---|
-| `--bg` | `#f6f5f2` | `#0f0f0e` | plano de página (gris cálido, monarch/origin) |
-| `--surface` | `#ffffff` | `#181817` | cards, paneles |
-| `--surface-2` | `#f1f0ec` | `#20201e` | hover, filas alternas, inputs |
-| `--border` | `#e6e4de` | `#2c2c2a` | bordes 1px |
-| `--text` | `#0b0b0b` | `#f5f5f3` | texto primario |
-| `--text-2` | `#52514e` | `#c3c2b7` | secundario |
-| `--muted` | `#898781` | `#898781` | ejes, labels |
-| `--accent` | `#2a78d6` | `#3987e5` | único acento: foco, activo, serie protagonista |
-| `--positive` | `#006300` | `#0ca30c` | ingresos, deltas buenos (texto) |
-| `--warning` | `#fab219` | `#fab219` | cerca del límite (siempre con ícono + texto) |
-| `--critical` | `#d03b3b` | `#e66767` | excedido, anomalía (siempre con ícono + texto) |
+| `--bg` | `#f5f5f5` | `#0a0a0a` | plano de página |
+| `--surface` | `#ffffff` | `#141414` | cards, paneles |
+| `--surface-2` | `#f2f2f2` | `#1c1c1c` | hover, filas, pistas de barras |
+| `--surface-3` | `#e7e7e7` | `#262626` | pista de progreso, switch apagado |
+| `--border` | `#e4e4e4` | `#262626` | bordes 1px |
+| `--text` | `#0a0a0a` | `#f5f5f5` | texto primario, botón primario |
+| `--text-2` | `#404040` | `#c4c4c4` | secundario |
+| `--muted` | `#6b6b6b` | `#8c8c8c` | labels, ejes |
+| `--accent` | `#d0103a` | `#f2445f` | rojo rubí para texto y trazos (5,5:1 y 5,1:1) |
+| `--accent-solid` | `#d0103a` | `#d0103a` | rellenos rojos con texto blanco (5,5:1 en ambos modos) |
+| `--accent-soft` | `#fdedf0` | `#2a0e15` | fondo de atención suave |
+| `--positive` | = `--text` | = `--text` | bueno: tinta + flecha, sin color |
+| `--warning` | = `--accent` | = `--accent` | atención: rojo sobre fondo suave + ícono |
+| `--critical` | = `--accent` | = `--accent` | crítico: rojo pleno (`--accent-solid`) + ícono |
+| `--chart-1` | `#171717` | `#e5e5e5` | serie principal |
+| `--chart-2` | `#8c8c8c` | `#6e6e6e` | serie secundaria, "otros" (≥3:1 sobre la card) |
 
-- botón primario: tinta (`--text` de fondo). el acento azul no compite con la acción principal.
-- gastos en tinta neutra, no en rojo. gastar no es un error. rojo solo para "excedido" o "anomalía".
-- categorías de gráficos: paleta categórica de 8 slots en orden fijo, validada con el script de dataviz sobre `#ffffff` y `#181817` (cvd y visión normal pasan en ambos modos). 3 slots en light quedan bajo 3:1 de contraste, por eso todo gráfico por categoría va acompañado de lista con montos visibles.
-- cada categoría tiene su slot fijo. el color sigue a la categoría, no al ranking. las que no tienen slot van a "otros" en gris.
+- **severidad por peso, no por tono**: gris (info, bueno) → rojo suave (atención, "cerca del límite") → rojo pleno (crítico, "excedido").
+- botón primario: tinta. el rojo no es el botón principal: si lo fuera, dejaría de significar "atención". el botón de borrar sí es rojo pleno.
+- gastos en tinta, no en rojo. gastar no es un error. un gasto se pinta de rojo solo si es una anomalía o pasó un límite.
+- contrastes chequeados con `contrast()` del validador de la skill dataviz: texto ≥ 4,5:1 en ambos modos.
 
 ### tipografía
 - geist sans para todo. geist mono solo para labels de sección en mayúscula con tracking (origin) y atajos de teclado.
@@ -50,8 +64,12 @@ base: [referencias-diseño-finanzas-personales.md](./referencias-diseño-finanza
 - sin gradientes, sin glass. movimiento: 150-200ms ease-out en hover, paneles y toasts. respeta `prefers-reduced-motion`.
 
 ### gráficos
+- **escala de grises.** serie principal en tinta (`--chart-1`), secundaria en gris (`--chart-2`). dos series se distinguen por luminosidad, que funciona igual con cualquier tipo de daltonismo.
+- el rojo en un gráfico solo marca valores negativos (ej: ahorro negativo).
+- **las categorías no tienen color.** se leen por nombre e ícono. gasto por categoría = barras horizontales en tinta ordenadas por monto (el largo dice cuánto). evolución de categorías = small multiples, una mini serie por categoría con la misma escala.
+- mapa de calor del calendario: una sola tinta, más intenso = más gasto.
 - barras ≤ 24px de ancho, extremo redondeado 4px, 2px de separación.
-- líneas 2px. área con relleno al 10%.
+- líneas 2px. área con relleno al 6-10%.
 - grilla en hairline sólida. nunca doble eje.
 - tooltip con crosshair en líneas y por barra en columnas.
 - leyenda siempre con ≥ 2 series. etiqueta directa solo en el punto que importa.

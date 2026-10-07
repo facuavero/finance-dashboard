@@ -12,7 +12,7 @@ import { Dialog, SheetContent } from '@/components/ui/dialog'
 import { ConfirmDialog } from '@/components/ui/alert-dialog'
 import { Popover, PopoverContent, PopoverTrigger, Segmented } from '@/components/ui/misc'
 import { PageHeader, EmptyState } from '@/components/app/states'
-import { CategoryIcon, seriesVar } from '@/components/app/icons'
+import { CategoryIcon } from '@/components/app/icons'
 import { Money } from '@/components/app/money'
 import { PAYMENT_METHODS, TxnForm, useQuickAdd, type CatOption, type TxnDraft } from '@/components/app/quick-add'
 import { ImportDialog } from './import-dialog'
@@ -343,7 +343,6 @@ export function TransactionsView({ rows, categories, today, initialQuery, openIm
                     </td>
                     <td className="hidden py-2.5 pr-3 md:table-cell">
                       <span className="inline-flex items-center gap-2">
-                        <span className="size-2 shrink-0 rounded-full" style={{ background: seriesVar(r.colorSlot) }} aria-hidden />
                         <CategoryIcon icon={r.categoryIcon} className="size-3.5 text-muted" />
                         <span className="truncate">{r.subcategoryName ? `${r.categoryName} · ${r.subcategoryName}` : r.categoryName}</span>
                       </span>
