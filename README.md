@@ -14,7 +14,7 @@ centro de inteligencia financiera personal. no es un tracker de gastos: responde
 - privacidad explícita: qué se guarda, qué ve la ia, exportar y borrar todo
 - dark y light mode, responsive, modo privacidad para ocultar montos
 
-diseño basado en referencias reales de mobbin: ver [docs/referencias-diseño-finanzas-personales.md](docs/referencias-diseño-finanzas-personales.md) y [docs/propuesta-diseño.md](docs/propuesta-diseño.md).
+diseño basado en referencias reales de mobbin: ver [docs/referencias-diseño-finanzas-personales.md](docs/referencias-diseño-finanzas-personales.md) y [docs/propuesta-diseño.md](docs/propuesta-diseño.md). la landing pública (`/` sin sesión) sale de [docs/referencias-diseño-landing-caudal.md](docs/referencias-diseño-landing-caudal.md) y [docs/propuesta-landing.md](docs/propuesta-landing.md).
 
 ## correrlo
 
@@ -28,7 +28,7 @@ node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
 npm run dev
 ```
 
-abrí http://localhost:3000 y tocá **probar con una cuenta demo**: crea un usuario con 6 meses de movimientos, presupuestos, objetivos y gmail/calendar de ejemplo, todo relativo a la fecha de hoy.
+abrí http://localhost:3000 y tocá **probar la demo**: crea un usuario con 6 meses de movimientos, presupuestos, objetivos y gmail/calendar de ejemplo, todo relativo a la fecha de hoy.
 
 sin `DATABASE_URL` usa pglite: postgres embebido en `.data/pglite`, cero instalación. para producción poné un `DATABASE_URL` de postgres (neon, supabase, railway, rds). con pglite o postgres por tcp las migraciones corren solas al arrancar. con neon se corren a mano con `npm run db:migrate`.
 
