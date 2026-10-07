@@ -11,6 +11,7 @@ import { CapitalChart, Legend } from '@/components/charts/charts'
 import { Delta, Money } from '@/components/app/money'
 import { EstimateTag } from '@/components/app/states'
 import { Onboarding } from './onboarding'
+import { AssistantCard } from '@/components/app/assistant-card'
 import { getAppData } from '@/modules/app/data'
 import { upcoming } from '@/modules/insights/upcoming'
 import { pickTip } from '@/modules/insights/tips'
@@ -26,12 +27,22 @@ function greeting() {
   return h < 6 ? 'Buenas noches' : h < 13 ? 'Buen día' : h < 20 ? 'Buenas tardes' : 'Buenas noches'
 }
 
-export default async function Inicio({ searchParams }: { searchParams: Promise<{ bienvenida?: string }> }) {
+export default async function Inicio({ searchParams }: { searchParams: Promise<{ bienvenida?: string; asistente?: string }> }) {
   const { user, ctx, alerts, combined, today, finance, prefs } = await getAppData()
   const sp = await searchParams
   const first = user.name.split(' ')[0]
 
-  if (!ctx.hasData) return <Onboarding name={first} welcome={!!sp.bienvenida} />
+  const assistantCats = finance.cats.map((c) => ({ id: c.id, name: c.name }))
+  if (!ctx.hasData) {
+    return (
+      <>
+        <div className="mx-auto max-w-3xl pt-4">
+          <AssistantCard categories={assistantCats} force={!!sp.asistente} />
+        </div>
+        <Onboarding name={first} welcome={!!sp.bienvenida} />
+      </>
+    )
+  }
 
   const m = ctx.month
   // capital al cierre de cada mes (real), hoy, y el cierre estimado de este mes (punteado)
@@ -59,6 +70,8 @@ export default async function Inicio({ searchParams }: { searchParams: Promise<{
           {greeting()}, {first}
         </h1>
       </div>
+
+      <AssistantCard categories={assistantCats} force={!!sp.asistente} />
 
       <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
         {/* izquierda: qué pasó. capital, gráfico y kpis en una sola pieza */}

@@ -69,7 +69,7 @@ const KEYWORDS: [RegExp, string][] = [
 const WEEKDAYS = ['domingo', 'lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado']
 
 /** todos los números del texto con su valor en centavos. "2 lucas" = $2.000, "1,5 palos" = $1.500.000, "4k" = $4.000 */
-function amountsIn(text: string): { cents: number; start: number; end: number }[] {
+export function amountsIn(text: string): { cents: number; start: number; end: number }[] {
   const out: { cents: number; start: number; end: number }[] = []
   const re = /(\d{1,3}(?:[.,]\d{3})+(?:[.,]\d{1,2})?|\d+(?:[.,]\d+)?)\s*(k|mil|lucas?|palos?|millon(?:es)?)?(?![\d\p{L}])/giu
   for (const m of text.matchAll(re)) {

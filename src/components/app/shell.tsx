@@ -337,6 +337,7 @@ function CommandPalette({ open, onOpenChange, onNew }: { open: boolean; onOpenCh
                   label="Nuevo movimiento"
                   hint="N"
                 />
+                <PaletteItem onSelect={() => go('/inicio?asistente=1')} icon={Sparkles} label="Cargar con el asistente de IA" />
                 <PaletteItem onSelect={() => go('/movimientos?importar=1')} icon={ArrowLeftRight} label="Importar movimientos (CSV)" />
                 <PaletteItem onSelect={() => go('/presupuestos?nuevo=1')} icon={PiggyBank} label="Crear presupuesto" />
                 <PaletteItem onSelect={() => go('/objetivos?nuevo=1')} icon={Target} label="Crear objetivo" />

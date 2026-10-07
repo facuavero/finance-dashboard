@@ -6,6 +6,8 @@ import { getAppData } from '@/modules/app/data'
 import { rateLimit } from '@/modules/auth/rate-limit'
 import { answerQuestion, generateReport, type AskTopic } from './service'
 import { proposeTxn } from './txn-service'
+import { planSchema, proposePlan, type Plan } from './assistant'
+import { createTransaction, upsertBudget, upsertGoal } from '@/modules/finance/repo'
 import type { ParsedTxn } from './parse-txn'
 
 const TOPICS = ['general', 'movimientos', 'presupuestos', 'objetivos', 'estadisticas', 'fugas', 'proyeccion', 'calendario', 'alertas'] as const satisfies readonly AskTopic[]
@@ -61,4 +63,51 @@ export async function parseTxnAction(input: { text: string; previous?: ParsedTxn
     instruction: instruction?.data,
   })
   return { ok: true, ...res }
+}
+
+/** texto libre o contenido de un archivo → plan para confirmar. no guarda nada. */
+export async function assistantPlanAction(text: string): Promise<{ ok: true; plan: Plan; engine: string; external: boolean } | { ok: false; error: string }> {
+  const t = z.string().trim().min(3, 'Escribí qué querés cargar').max(30_000, 'El texto es muy largo: probá con un archivo más chico').safeParse(text)
+  if (!t.success) return { ok: false, error: t.error.issues[0].message }
+  const { user, finance, today } = await getAppData()
+  if (!rateLimit(`plan:${user.id}`, 30, 60 * 60_000).ok) return { ok: false, error: 'Llegaste al límite del asistente por hora. Probá más tarde.' }
+  const res = await proposePlan({ text: t.data, cats: finance.cats.map((c) => ({ id: c.id, name: c.name, kind: c.kind, parentId: c.parentId })), today, allowExternal: user.aiExternalEnabled })
+  if (!res.plan.transactions.length && !res.plan.budgets.length && !res.plan.goals.length) return { ok: false, error: 'No encontré nada para cargar. Probá con montos: "pedidosya 4500 ayer", "presupuesto de delivery 50000".' }
+  return { ok: true, ...res }
+}
+
+/** guarda lo que la persona confirmó. se vuelve a validar todo: el plan viaja por el cliente. */
+export async function applyPlanAction(input: Plan): Promise<{ ok: true; created: { transactions: number; budgets: number; goals: number }; skipped: number } | { ok: false; error: string }> {
+  const parsed = planSchema.safeParse(input)
+  if (!parsed.success) return { ok: false, error: 'El plan tiene datos inválidos' }
+  const { user, db, today } = await getAppData()
+  const created = { transactions: 0, budgets: 0, goals: 0 }
+  let skipped = 0
+  try {
+    for (const t of parsed.data.transactions) {
+      if (!t.amountCents || !t.categoryId) {
+        skipped++
+        continue
+      }
+      await createTransaction(db, user.id, { type: t.type, amountCents: t.amountCents, date: t.date, description: t.description, categoryId: t.categoryId, subcategoryId: t.subcategoryId, paymentMethod: t.paymentMethod, recurrence: t.recurrence, tags: [] })
+      created.transactions++
+    }
+    for (const b of parsed.data.budgets) {
+      await upsertBudget(db, user.id, { name: b.name, categoryId: b.categoryId, goalId: null, period: b.period, amountCents: b.amountCents })
+      created.budgets++
+    }
+    for (const g of parsed.data.goals) {
+      if (g.targetDate <= today) {
+        skipped++
+        continue
+      }
+      await upsertGoal(db, user.id, { name: g.name, kind: g.kind, targetCents: g.targetCents, savedCents: g.savedCents, targetDate: g.targetDate }, today)
+      created.goals++
+    }
+  } catch (e) {
+    revalidatePath('/', 'layout')
+    return { ok: false, error: e instanceof Error ? e.message : 'No se pudo guardar todo' }
+  }
+  revalidatePath('/', 'layout')
+  return { ok: true, created, skipped }
 }
