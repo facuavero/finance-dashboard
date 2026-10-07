@@ -22,7 +22,7 @@ export function Tip({ content, children, side = 'top' }: { content: React.ReactN
     <T.Root delayDuration={200}>
       <T.Trigger asChild>{children}</T.Trigger>
       <T.Portal>
-        <T.Content side={side} sideOffset={6} className="z-50 max-w-xs rounded-lg bg-fg px-2.5 py-1.5 text-[12px] leading-snug text-bg shadow-lg animate-in">
+        <T.Content side={side} sideOffset={6} className="z-50 max-w-xs rounded-xl bg-fg px-3 py-1.5 text-[12px] leading-snug text-bg shadow-lg animate-in">
           {content}
         </T.Content>
       </T.Portal>
@@ -37,7 +37,7 @@ export const PopoverTrigger = P.Trigger
 export function PopoverContent({ className, ...props }: React.ComponentProps<typeof P.Content>) {
   return (
     <P.Portal>
-      <P.Content sideOffset={6} align="start" className={cn('z-50 w-72 rounded-xl border border-border bg-surface p-3 shadow-lg outline-none animate-in', className)} {...props} />
+      <P.Content sideOffset={6} align="start" className={cn('z-50 w-72 rounded-2xl border border-border-strong bg-surface p-3 shadow-2xl shadow-black/30 outline-none animate-in', className)} {...props} />
     </P.Portal>
   )
 }
@@ -47,24 +47,24 @@ export const MenuTrigger = DM.Trigger
 export function MenuContent({ className, ...props }: React.ComponentProps<typeof DM.Content>) {
   return (
     <DM.Portal>
-      <DM.Content sideOffset={6} align="end" className={cn('z-50 min-w-48 rounded-xl border border-border bg-surface p-1 shadow-lg animate-in', className)} {...props} />
+      <DM.Content sideOffset={6} align="end" className={cn('z-50 min-w-52 rounded-2xl border border-border-strong bg-surface p-1.5 shadow-2xl shadow-black/30 animate-in', className)} {...props} />
     </DM.Portal>
   )
 }
 export function MenuItem({ className, ...props }: React.ComponentProps<typeof DM.Item>) {
-  return <DM.Item className={cn('flex cursor-pointer items-center gap-2 rounded-lg px-2.5 py-2 text-sm text-fg outline-none data-[highlighted]:bg-surface-2 [&_svg]:size-4 [&_svg]:text-muted', className)} {...props} />
+  return <DM.Item className={cn('flex cursor-pointer items-center gap-2.5 rounded-xl px-3 py-2 text-sm text-fg outline-none data-[highlighted]:bg-surface-2 [&_svg]:size-4 [&_svg]:text-muted', className)} {...props} />
 }
 export const MenuSeparator = () => <DM.Separator className="my-1 h-px bg-border" />
 export function MenuLabel({ children }: { children: React.ReactNode }) {
-  return <DM.Label className="px-2.5 py-1.5 text-[12px] text-muted">{children}</DM.Label>
+  return <DM.Label className="label-caps px-3 pt-2 pb-1 !text-[10px]">{children}</DM.Label>
 }
 
 export const TabsRoot = Tabs.Root
 export function TabsList({ className, ...props }: React.ComponentProps<typeof Tabs.List>) {
-  return <Tabs.List className={cn('flex gap-1 border-b border-border', className)} {...props} />
+  return <Tabs.List className={cn('inline-flex gap-1 rounded-full bg-surface-2 p-1', className)} {...props} />
 }
 export function TabsTrigger({ className, ...props }: React.ComponentProps<typeof Tabs.Trigger>) {
-  return <Tabs.Trigger className={cn('-mb-px cursor-pointer border-b-2 border-transparent px-3 py-2 text-sm text-muted transition-colors hover:text-fg data-[state=active]:border-fg data-[state=active]:text-fg', className)} {...props} />
+  return <Tabs.Trigger className={cn('cursor-pointer rounded-full px-3.5 py-1.5 text-sm text-muted transition-colors hover:text-fg data-[state=active]:bg-surface data-[state=active]:text-fg data-[state=active]:shadow-[0_0_0_1px_var(--border-strong)]', className)} {...props} />
 }
 export const TabsContent = Tabs.Content
 
@@ -75,7 +75,7 @@ export const CollapsibleContent = C.Content
 /** selector segmentado en pills (1s/1m/3m…) */
 export function Segmented<T extends string>({ value, onChange, options, label, size = 'md' }: { value: T; onChange: (v: T) => void; options: { value: T; label: string }[]; label: string; size?: 'sm' | 'md' }) {
   return (
-    <div role="radiogroup" aria-label={label} className="inline-flex rounded-full border border-border bg-surface p-0.5">
+    <div role="radiogroup" aria-label={label} className="inline-flex rounded-full bg-surface-2 p-1">
       {options.map((o) => (
         <button
           key={o.value}
@@ -83,7 +83,7 @@ export function Segmented<T extends string>({ value, onChange, options, label, s
           role="radio"
           aria-checked={value === o.value}
           onClick={() => onChange(o.value)}
-          className={cn('cursor-pointer rounded-full font-medium transition-colors', size === 'sm' ? 'px-2.5 py-0.5 text-[12px]' : 'px-3 py-1 text-[13px]', value === o.value ? 'bg-fg text-bg' : 'text-fg-2 hover:text-fg')}
+          className={cn('cursor-pointer rounded-full font-medium transition-colors', size === 'sm' ? 'px-2.5 py-0.5 text-[12px]' : 'px-3.5 py-1 text-[13px]', value === o.value ? 'bg-fg text-bg' : 'text-muted hover:text-fg')}
         >
           {o.label}
         </button>

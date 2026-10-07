@@ -108,7 +108,7 @@ export function BudgetsView({ budgets, categories, goals, suggestions, today, op
                 </Menu>
               </div>
               <div className="mt-4 flex items-end justify-between gap-2">
-                <p className="text-[22px] leading-none font-semibold tracking-[-0.02em]">
+                <p className="text-[24px] leading-none font-medium">
                   <Money cents={b.spentCents} />
                   <span className="ml-1 text-[13px] font-normal text-muted">
                     de <Money cents={b.amountCents} />
@@ -143,7 +143,7 @@ export function BudgetsView({ budgets, categories, goals, suggestions, today, op
 
       {suggestions.length > 0 && (
         <section className="mt-8" aria-labelledby="sug">
-          <h2 id="sug" className="text-[15px] font-semibold">
+          <h2 id="sug" className="display text-[26px]">
             Sugerencias con tus datos
           </h2>
           <p className="mt-0.5 text-[13px] text-muted">Categorías sin presupuesto. El monto sugerido es tu promedio de los últimos 3 meses.</p>
@@ -179,9 +179,9 @@ export function BudgetsView({ budgets, categories, goals, suggestions, today, op
 
 function Stat({ label, value }: { label: string; value: React.ReactNode }) {
   return (
-    <Card className="p-4">
-      <p className="text-[13px] text-fg-2">{label}</p>
-      <p className="mt-1 text-[20px] font-semibold tracking-[-0.02em]">{value}</p>
+    <Card className="p-5">
+      <p className="label-caps">{label}</p>
+      <p className="mt-3 font-mono text-[26px] leading-none font-medium tracking-[-0.045em]">{value}</p>
     </Card>
   )
 }

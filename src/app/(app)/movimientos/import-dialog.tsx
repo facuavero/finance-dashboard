@@ -129,7 +129,7 @@ export function ImportDialog({ open, onOpenChange, categories }: { open: boolean
       <DialogContent title="Importar movimientos" description="CSV exportado de tu banco o billetera. Revisás antes de confirmar." wide>
         {!rows ? (
           <div>
-            <label className="flex cursor-pointer flex-col items-center gap-2 rounded-xl border border-dashed border-border-strong px-6 py-10 text-center hover:bg-surface-2">
+            <label className="flex cursor-pointer flex-col items-center gap-2 rounded-2xl border border-dashed border-border-strong px-6 py-10 text-center hover:bg-surface-2">
               <FileUp className="size-6 text-muted" aria-hidden />
               <span className="text-sm font-medium">Elegí un archivo CSV</span>
               <span className="text-[12px] text-muted">Necesita columnas de fecha, descripción y monto. Hasta 5 MB.</span>
@@ -164,7 +164,7 @@ export function ImportDialog({ open, onOpenChange, categories }: { open: boolean
             <label className="flex items-center gap-2 text-[13px]">
               <Switch checked={invert} onCheckedChange={setInvert} aria-label="Invertir signo" /> Mis gastos vienen en positivo (invertir signo)
             </label>
-            <div className="overflow-x-auto rounded-lg border border-border">
+            <div className="overflow-x-auto rounded-2xl border border-border">
               <table className="w-full text-[12px]">
                 <thead className="bg-surface-2 text-left text-muted">
                   <tr>

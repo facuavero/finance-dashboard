@@ -3,11 +3,10 @@
 import { useState, useTransition } from 'react'
 import Link from 'next/link'
 import { toast } from 'sonner'
-import { ArrowRight, ChevronDown, RefreshCw, Send, Sparkles } from 'lucide-react'
+import { ArrowRight, ArrowUp, ChevronDown, RefreshCw, Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Input } from '@/components/ui/input'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger, Segmented } from '@/components/ui/misc'
 import { Money } from '@/components/app/money'
 import { EstimateTag } from '@/components/app/states'
@@ -47,20 +46,21 @@ export function Recommendations({ summary, upcoming, recs, engine, note, generat
   return (
     <div className={cn('space-y-6 transition-opacity', pending && 'opacity-70')}>
       <section aria-labelledby="sum-title" className="grid gap-4 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
-        <Card className="p-5">
-          <div className="flex items-center gap-2 text-[13px]">
+        <Card className="relative overflow-hidden p-6">
+          <div className="pointer-events-none absolute -top-24 -right-16 size-72 rounded-full bg-[radial-gradient(closest-side,var(--glow-strong),transparent)]" aria-hidden />
+          <div className="relative flex items-center gap-2 text-[13px]">
             <Sparkles className="size-4 text-accent" aria-hidden />
             <h2 id="sum-title" className="font-medium">
               Qué pasó y por qué
             </h2>
-            <span className="ml-auto text-[12px] text-muted">
+            <span className="ml-auto font-mono text-[11px] text-muted">
               {engine}
               {generatedAt ? ` · ${new Date(generatedAt).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'America/Argentina/Buenos_Aires' })}` : ''}
             </span>
           </div>
-          <p className="money mt-3 text-[16px] leading-relaxed">{summary}</p>
+          <p className="money relative mt-4 text-[17px] leading-[1.6] font-medium">{summary}</p>
           {upcoming && (
-            <p className="money mt-3 border-t border-border pt-3 text-[14px] text-fg-2">
+            <p className="money relative mt-4 border-t border-border pt-4 text-[14px] text-fg-2">
               <span className="font-medium text-fg">Qué viene: </span>
               {upcoming}{' '}
               <Link href="/calendario" className="text-accent hover:underline">
@@ -70,23 +70,23 @@ export function Recommendations({ summary, upcoming, recs, engine, note, generat
           )}
           {note && <p className="mt-3 text-[12px] text-muted">{note}</p>}
         </Card>
-        <Card className="p-5">
-          <p className="flex items-center gap-2 text-[13px] text-fg-2">
-            Ahorro posible en microgastos y suscripciones <EstimateTag />
+        <Card className="flex flex-col justify-between p-6">
+          <p className="flex flex-wrap items-center gap-2 label-caps">
+            Ahorro posible <EstimateTag />
           </p>
-          <p className="mt-1 text-[32px] leading-tight font-semibold tracking-[-0.02em] text-positive">
+          <p className="mt-4 text-[44px] leading-none font-medium text-positive">
             <Money cents={totalMonthly} />
             <span className="ml-1 text-[14px] font-normal text-muted">/mes</span>
           </p>
-          <p className="text-[13px] text-muted">
-            ~<Money cents={totalMonthly * 12} /> al año si aplicás esas recomendaciones. No incluye gastos puntuales.
+          <p className="mt-3 text-[13px] text-muted">
+            En microgastos y suscripciones. ~<Money cents={totalMonthly * 12} /> al año si aplicás esas recomendaciones. No incluye gastos puntuales.
           </p>
         </Card>
       </section>
 
       <section aria-labelledby="recs-title">
         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-          <h2 id="recs-title" className="text-[17px] font-semibold">
+          <h2 id="recs-title" className="display text-[30px]">
             Qué deberías hacer ahora
           </h2>
           <Segmented size="sm" label="Filtrar por prioridad" value={prio} onChange={setPrio} options={[{ value: 'todas', label: `Todas (${recs.length})` }, { value: 'alta', label: 'Alta' }, { value: 'media', label: 'Media' }, { value: 'baja', label: 'Baja' }]} />
@@ -94,15 +94,15 @@ export function Recommendations({ summary, upcoming, recs, engine, note, generat
         <ol className="space-y-3">
           {shown.map((r, i) => (
             <li key={r.id}>
-              <Card className="p-5">
+              <Card className="p-6">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="num text-[12px] text-muted">{String(i + 1).padStart(2, '0')}</span>
+                  <span className="font-mono text-[12px] text-muted">{String(i + 1).padStart(2, '0')}</span>
                   <Badge tone={PRIO[r.priority]}>Prioridad {r.priority}</Badge>
                   <Badge tone="outline">{AREA[r.area]}</Badge>
                 </div>
                 <div className="mt-3 grid gap-4 lg:grid-cols-[minmax(0,1fr)_220px]">
                   <div>
-                    <h3 className="money text-[16px] leading-snug font-semibold">{r.problem}</h3>
+                    <h3 className="money text-[18px] leading-snug font-medium">{r.problem}</h3>
                     <p className="money mt-2 text-[14px] text-fg-2">
                       <span className="font-medium text-fg">Por qué: </span>
                       {r.explanation}
@@ -126,14 +126,14 @@ export function Recommendations({ summary, upcoming, recs, engine, note, generat
                       </Collapsible>
                     )}
                   </div>
-                  <div className="flex flex-col justify-between gap-3 rounded-lg bg-surface-2 p-4">
+                  <div className="flex flex-col justify-between gap-3 rounded-2xl bg-surface-2 p-4">
                     <div>
                       <p className="flex items-center gap-1.5 text-[12px] text-muted">
                         Impacto estimado <EstimateTag />
                       </p>
                       {r.impactMonthlyCents ? (
                         <>
-                          <p className="mt-1 text-[20px] font-semibold text-fg">
+                          <p className="mt-2 text-[24px] leading-none font-medium text-fg">
                             <Money cents={r.impactMonthlyCents} />
                             <span className="text-[12px] font-normal text-muted">/mes</span>
                           </p>
@@ -186,25 +186,26 @@ export function AskBox() {
     })
   }
   return (
-    <Card className="mb-6 p-5">
+    <div>
       <form
         onSubmit={(e) => {
           e.preventDefault()
           ask(q)
         }}
-        className="flex gap-2"
+        className="glow-ring flex items-center gap-2 rounded-full bg-surface p-2 pl-5"
       >
         <label htmlFor="ask" className="sr-only">
           Preguntale a Caudal
         </label>
-        <Input id="ask" placeholder="Preguntale a Caudal sobre tu plata…" value={q} onChange={(e) => setQ(e.target.value)} maxLength={500} />
-        <Button type="submit" loading={pending} aria-label="Preguntar">
-          <Send />
+        <Sparkles className="size-4 shrink-0 text-accent" aria-hidden />
+        <input id="ask" placeholder="Preguntale a Caudal sobre tu plata…" value={q} onChange={(e) => setQ(e.target.value)} maxLength={500} className="h-11 min-w-0 flex-1 bg-transparent text-[15px] outline-none placeholder:text-muted" />
+        <Button type="submit" size="icon" className="size-11" loading={pending} aria-label="Preguntar">
+          {!pending && <ArrowUp />}
         </Button>
       </form>
-      <div className="mt-3 flex flex-wrap gap-1.5">
+      <div className="mt-4 flex flex-wrap justify-center gap-2">
         {SUGGESTED.map((s) => (
-          <button key={s} type="button" onClick={() => ask(s)} disabled={pending} className="cursor-pointer rounded-full border border-border px-3 py-1 text-[12px] text-fg-2 hover:border-border-strong hover:text-fg disabled:opacity-50">
+          <button key={s} type="button" onClick={() => ask(s)} disabled={pending} className="cursor-pointer rounded-full bg-surface-2 px-3.5 py-1.5 text-[12.5px] text-fg-2 transition-colors hover:bg-surface-3 hover:text-fg disabled:opacity-50">
             {s}
           </button>
         ))}
@@ -212,14 +213,14 @@ export function AskBox() {
       {answers.length > 0 && (
         <ul className="mt-4 space-y-3" aria-live="polite">
           {answers.map((a, i) => (
-            <li key={i} className="rounded-lg bg-surface-2 p-4 text-[14px]">
+            <li key={i} className="rounded-card border border-border bg-surface p-5 text-[15px]">
               <p className="text-[12px] text-muted">{a.q}</p>
-              <p className="money mt-1 whitespace-pre-line">{a.a}</p>
-              <p className="mt-2 text-[11px] text-muted">{a.engine}</p>
+              <p className="money mt-2 leading-relaxed whitespace-pre-line">{a.a}</p>
+              <p className="mt-3 font-mono text-[11px] text-muted">{a.engine}</p>
             </li>
           ))}
         </ul>
       )}
-    </Card>
+    </div>
   )
 }

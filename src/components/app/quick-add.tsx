@@ -153,7 +153,7 @@ export function TxnForm({ initial, categories, today, onDone }: { initial: TxnDr
 
   return (
     <form onSubmit={submit} className="space-y-4" noValidate>
-      <div role="radiogroup" aria-label="Tipo" className="grid grid-cols-2 gap-1 rounded-lg bg-surface-2 p-1">
+      <div role="radiogroup" aria-label="Tipo" className="grid grid-cols-2 gap-1 rounded-full bg-surface-2 p-1">
         {(['expense', 'income'] as const).map((t) => (
           <button
             key={t}
@@ -161,7 +161,7 @@ export function TxnForm({ initial, categories, today, onDone }: { initial: TxnDr
             role="radio"
             aria-checked={d.type === t}
             onClick={() => setD((p) => ({ ...p, type: t, categoryId: null, subcategoryId: null }))}
-            className={cn('h-8 cursor-pointer rounded-md text-sm font-medium transition-colors', d.type === t ? 'bg-surface text-fg shadow-sm' : 'text-muted hover:text-fg')}
+            className={cn('h-9 cursor-pointer rounded-full text-sm font-medium transition-colors', d.type === t ? 'bg-fg text-bg' : 'text-muted hover:text-fg')}
           >
             {t === 'expense' ? 'Gasto' : 'Ingreso'}
           </button>
@@ -170,7 +170,7 @@ export function TxnForm({ initial, categories, today, onDone }: { initial: TxnDr
 
       <Field label="Monto" htmlFor="qa-amount" error={errors.amount}>
         <div className="relative">
-          <span className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-xl text-muted">$</span>
+          <span className="pointer-events-none absolute top-1/2 left-5 -translate-y-1/2 font-mono text-3xl text-muted">$</span>
           <Input
             ref={amountRef}
             id="qa-amount"
@@ -180,13 +180,13 @@ export function TxnForm({ initial, categories, today, onDone }: { initial: TxnDr
             value={d.amount}
             onChange={(e) => set('amount', e.target.value)}
             aria-invalid={!!errors.amount}
-            className="num h-14 pl-8 text-2xl font-semibold"
+            className="num h-20 rounded-2xl pl-12 font-mono text-[40px] font-medium tracking-[-0.04em]"
           />
         </div>
       </Field>
 
       <fieldset>
-        <legend className="mb-1.5 text-[13px] font-medium">Categoría</legend>
+        <legend className="mb-2 text-[12px] font-medium text-fg-2">Categoría</legend>
         <div className="flex flex-wrap gap-1.5">
           {top.map((c) => (
             <button
@@ -197,14 +197,14 @@ export function TxnForm({ initial, categories, today, onDone }: { initial: TxnDr
                 set('subcategoryId', null)
               }}
               aria-pressed={d.categoryId === c.id}
-              className={cn('inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-full border px-3 text-[13px] transition-colors', d.categoryId === c.id ? 'border-fg bg-fg text-bg' : 'border-border bg-surface text-fg-2 hover:border-border-strong hover:text-fg')}
+              className={cn('inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-full border px-3.5 text-[13px] transition-colors', d.categoryId === c.id ? 'border-fg bg-fg text-bg' : 'border-transparent bg-surface-2 text-fg-2 hover:bg-surface-3 hover:text-fg')}
             >
               <CategoryIcon icon={c.icon} className="size-3.5" />
               {c.name}
             </button>
           ))}
           {roots.length > top.length && (
-            <NativeSelect aria-label="Otras categorías" value={top.some((c) => c.id === d.categoryId) ? '' : (d.categoryId ?? '')} onChange={(e) => set('categoryId', e.target.value || null)} className="h-8 w-auto rounded-full py-0 text-[13px]">
+            <NativeSelect aria-label="Otras categorías" value={top.some((c) => c.id === d.categoryId) ? '' : (d.categoryId ?? '')} onChange={(e) => set('categoryId', e.target.value || null)} className="h-9 w-auto rounded-full py-0 text-[13px]">
               <option value="">Otra…</option>
               {roots
                 .filter((c) => !top.includes(c))
@@ -233,7 +233,7 @@ export function TxnForm({ initial, categories, today, onDone }: { initial: TxnDr
               { v: today, l: 'Hoy' },
               { v: yesterday, l: 'Ayer' },
             ].map((o) => (
-              <button key={o.l} type="button" onClick={() => set('date', o.v)} aria-pressed={d.date === o.v} className={cn('h-10 cursor-pointer rounded-lg border px-2.5 text-[13px]', d.date === o.v ? 'border-fg bg-fg text-bg' : 'border-border text-fg-2 hover:text-fg')}>
+              <button key={o.l} type="button" onClick={() => set('date', o.v)} aria-pressed={d.date === o.v} className={cn('h-11 cursor-pointer rounded-full border px-3.5 text-[13px]', d.date === o.v ? 'border-fg bg-fg text-bg' : 'border-transparent bg-surface-2 text-fg-2 hover:text-fg')}>
                 {o.l}
               </button>
             ))}
@@ -282,7 +282,7 @@ export function TxnForm({ initial, categories, today, onDone }: { initial: TxnDr
 
       <div className="flex items-center justify-between gap-3 border-t border-border pt-4">
         <p className="hidden text-[12px] text-muted sm:block">
-          <kbd className="rounded border border-border px-1 font-mono text-[11px]">Enter</kbd> guarda
+          <kbd className="rounded-full border border-border-strong px-1.5 font-mono text-[11px]">Enter</kbd> guarda
         </p>
         <Button type="submit" size="lg" loading={pending} className="w-full sm:w-auto">
           {d.id ? 'Guardar cambios' : cents ? `Registrar ${money(cents)}` : 'Registrar'}

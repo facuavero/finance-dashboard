@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button'
 
 export const GOAL_STATE = {
   done: { label: 'Cumplido', tone: 'positive' as const },
-  on_track: { label: 'En camino', tone: 'accent' as const },
+  on_track: { label: 'En camino', tone: 'neutral' as const },
   behind: { label: 'Atrasado', tone: 'warning' as const },
   overdue: { label: 'Vencido', tone: 'critical' as const },
 }

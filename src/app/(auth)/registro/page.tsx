@@ -14,8 +14,8 @@ export default function RegisterPage() {
   const { err, onChange } = useFormErrors(state.errors)
   return (
     <div>
-      <h1 className="text-2xl font-semibold tracking-[-0.02em]">Crear cuenta</h1>
-      <p className="mt-1 text-sm text-muted">Gratis. En 1 minuto estás cargando tu primer gasto.</p>
+      <h1 className="display text-[44px]">Crear cuenta</h1>
+      <p className="mt-2 text-[15px] text-fg-2">Gratis. En 1 minuto estás cargando tu primer gasto.</p>
       {state.message && <FormAlert className="mt-5">{state.message}</FormAlert>}
       <form action={action} className="mt-6 space-y-4" noValidate onChange={onChange}>
         <Field label="Nombre" htmlFor="name" error={err('name')}>

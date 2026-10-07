@@ -203,7 +203,7 @@ function CategoryForm({ initial, parents, onDone }: { initial: Partial<Cat>; par
         <legend className="mb-1.5 text-[13px] font-medium">Ícono</legend>
         <div className="grid grid-cols-8 gap-1">
           {ICON_NAMES.map((n) => (
-            <button key={n} type="button" onClick={() => setIcon(n)} aria-pressed={icon === n} aria-label={n} className={cn('flex aspect-square cursor-pointer items-center justify-center rounded-lg border', icon === n ? 'border-fg bg-surface-2' : 'border-transparent hover:bg-surface-2')}>
+            <button key={n} type="button" onClick={() => setIcon(n)} aria-pressed={icon === n} aria-label={n} className={cn('flex aspect-square cursor-pointer items-center justify-center rounded-2xl border', icon === n ? 'border-fg bg-surface-2' : 'border-transparent hover:bg-surface-2')}>
               <CategoryIcon icon={n} />
             </button>
           ))}

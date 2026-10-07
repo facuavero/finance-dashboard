@@ -43,13 +43,13 @@ export function GoalsView({ goals, capacityCents, today, openNew }: { goals: Goa
         <Card className="mb-5 flex flex-col gap-3 p-5 sm:flex-row sm:items-center">
           <div className="flex-1">
             <p className="text-[13px] text-fg-2">Tus objetivos piden por mes</p>
-            <p className="text-[24px] font-semibold tracking-[-0.02em]">
+            <p className="text-[26px] leading-none font-medium">
               <Money cents={needed} />
             </p>
           </div>
           <div className="flex-1">
             <p className="text-[13px] text-fg-2">Tu capacidad de ahorro típica</p>
-            <p className="text-[24px] font-semibold tracking-[-0.02em]">
+            <p className="text-[26px] leading-none font-medium">
               <Money cents={capacityCents} />
             </p>
           </div>
@@ -80,7 +80,7 @@ export function GoalsView({ goals, capacityCents, today, openNew }: { goals: Goa
             return (
               <Card key={g.id} className="flex flex-col p-5">
                 <div className="flex items-start gap-3">
-                  <span className="flex size-9 items-center justify-center rounded-lg bg-surface-2 text-fg-2">
+                  <span className="flex size-9 items-center justify-center rounded-2xl bg-surface-2 text-fg-2">
                     <K.icon className="size-4" aria-hidden />
                   </span>
                   <div className="min-w-0 flex-1">
@@ -102,7 +102,7 @@ export function GoalsView({ goals, capacityCents, today, openNew }: { goals: Goa
                     </MenuContent>
                   </Menu>
                 </div>
-                <p className="mt-4 text-[22px] leading-none font-semibold tracking-[-0.02em]">
+                <p className="mt-4 text-[24px] leading-none font-medium">
                   <Money cents={g.savedCents} />
                   <span className="ml-1 text-[13px] font-normal text-muted">
                     de <Money cents={g.targetCents} />
@@ -215,7 +215,7 @@ function GoalForm({ initial, today, onDone }: { initial: Partial<GoalStatus>; to
           {(Object.keys(KIND) as Kind[]).map((k) => {
             const K = KIND[k]
             return (
-              <button key={k} type="button" aria-pressed={kind === k} onClick={() => setKind(k)} className={cn('flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-left text-[13px]', kind === k ? 'border-fg bg-surface-2 font-medium' : 'border-border text-fg-2 hover:border-border-strong')}>
+              <button key={k} type="button" aria-pressed={kind === k} onClick={() => setKind(k)} className={cn('flex cursor-pointer items-center gap-2 rounded-2xl border px-3 py-2 text-left text-[13px]', kind === k ? 'border-fg bg-surface-2 font-medium' : 'border-border text-fg-2 hover:border-border-strong')}>
                 <K.icon className="size-4 shrink-0" aria-hidden /> {K.label}
               </button>
             )

@@ -58,7 +58,7 @@ export function IntegrationsView({ providers, googleReady, notice, error, active
         ))}
       </div>
       <Card className="flex flex-col gap-3 p-5 sm:flex-row sm:items-center">
-        <span className="flex size-10 items-center justify-center rounded-lg bg-surface-2 text-fg-2">
+        <span className="flex size-10 items-center justify-center rounded-2xl bg-surface-2 text-fg-2">
           <Upload className="size-5" aria-hidden />
         </span>
         <div className="flex-1">
@@ -94,7 +94,7 @@ function ProviderCard({ p, googleReady }: { p: P; googleReady: boolean }) {
   return (
     <Card className="flex flex-col">
       <div className="flex items-start gap-3 p-5">
-        <span className="flex size-10 items-center justify-center rounded-lg bg-surface-2 text-fg">
+        <span className="flex size-10 items-center justify-center rounded-2xl bg-surface-2 text-fg">
           <Icon className="size-5" aria-hidden />
         </span>
         <div className="min-w-0 flex-1">

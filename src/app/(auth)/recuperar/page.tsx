@@ -18,7 +18,7 @@ export default function ForgotPage() {
         <span className="flex size-10 items-center justify-center rounded-full bg-positive-soft text-positive">
           <MailCheck className="size-5" aria-hidden />
         </span>
-        <h1 className="mt-4 text-2xl font-semibold tracking-[-0.02em]">Revisá tu correo</h1>
+        <h1 className="display mt-4 text-[44px]">Revisá tu correo</h1>
         <p className="mt-2 text-sm text-fg-2">{state.message}</p>
         <p className="mt-2 text-[13px] text-muted">¿No llega? Mirá en spam o esperá un par de minutos antes de pedirlo de nuevo.</p>
         {state.devLink && (
@@ -38,8 +38,8 @@ export default function ForgotPage() {
   }
   return (
     <div>
-      <h1 className="text-2xl font-semibold tracking-[-0.02em]">Recuperar contraseña</h1>
-      <p className="mt-1 text-sm text-muted">Ingresá tu email y te mandamos un link para crear una contraseña nueva.</p>
+      <h1 className="display text-[44px]">Recuperar contraseña</h1>
+      <p className="mt-2 text-[15px] text-fg-2">Ingresá tu email y te mandamos un link para crear una contraseña nueva.</p>
       {state.message && <FormAlert className="mt-5">{state.message}</FormAlert>}
       <form action={action} className="mt-6 space-y-4" noValidate onChange={onChange}>
         <Field label="Email" htmlFor="email" error={err('email')}>

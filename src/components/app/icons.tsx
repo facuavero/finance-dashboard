@@ -18,15 +18,11 @@ export function CategoryIcon({ icon, className }: { icon: string; className?: st
   return <I className={cn('size-4', className)} aria-hidden />
 }
 
-/** color de serie de una categoría (slot fijo). sin slot → gris "otros" */
-export const seriesVar = (slot: number | null | undefined) => (slot && slot >= 1 && slot <= 8 ? `var(--series-${slot})` : 'var(--series-other)')
-
-/** ícono de categoría en chip: el color va en el punto, el texto sigue en tinta */
-export function CategoryBadge({ icon, slot, className }: { icon: string; slot?: number | null; className?: string }) {
+/** ícono de categoría en chip. la categoría se identifica por nombre e ícono, no por color */
+export function CategoryBadge({ icon, className }: { icon: string; className?: string }) {
   return (
-    <span className={cn('relative inline-flex size-8 shrink-0 items-center justify-center rounded-lg bg-surface-2 text-fg-2', className)}>
+    <span className={cn('inline-flex size-8 shrink-0 items-center justify-center rounded-2xl bg-surface-2 text-fg-2', className)}>
       <CategoryIcon icon={icon} />
-      {slot ? <span className="absolute -right-0.5 -bottom-0.5 size-2.5 rounded-full border-2 border-surface" style={{ background: seriesVar(slot) }} aria-hidden /> : null}
     </span>
   )
 }

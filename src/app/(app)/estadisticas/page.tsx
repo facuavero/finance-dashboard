@@ -5,9 +5,9 @@ import { Card, CardBody, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { PageHeader } from '@/components/app/states'
 import { Kpi } from '@/components/app/blocks/kpi'
-import { CategoryIcon, seriesVar } from '@/components/app/icons'
+import { CategoryIcon } from '@/components/app/icons'
 import { Money } from '@/components/app/money'
-import { CapitalChart, CategoryLines, FlowBars, SingleBars, StackedBars } from '@/components/charts/charts'
+import { CapitalChart, CategoryMultiples, FlowBars, SingleBars, StackedBars } from '@/components/charts/charts'
 import { getAppData } from '@/modules/app/data'
 import { buildStats } from '@/modules/analytics/stats'
 import type { Granularity } from '@/modules/analytics/dates'
@@ -100,8 +100,8 @@ export default async function Estadisticas({ searchParams }: { searchParams: Pro
             <StackedBars
               data={s.series.map((p) => ({ label: p.label, a: p.recurringCents, b: p.variableCents }))}
               series={[
-                { key: 'a', name: 'Recurrentes', color: 'var(--series-7)' },
-                { key: 'b', name: 'Variables', color: 'var(--series-4)' },
+                { key: 'a', name: 'Recurrentes', color: 'var(--chart-1)' },
+                { key: 'b', name: 'Variables', color: 'var(--chart-2)' },
               ]}
             />
           </CardBody>
@@ -127,12 +127,11 @@ export default async function Estadisticas({ searchParams }: { searchParams: Pro
                   <tr key={c.categoryId ?? c.name} className="border-b border-border/60 last:border-0">
                     <td className="py-2 pl-5">
                       <span className="flex items-center gap-2">
-                        <span className="size-2 rounded-full" style={{ background: seriesVar(c.colorSlot) }} aria-hidden />
                         <CategoryIcon icon={c.icon} className="size-3.5 text-muted" />
                         {c.name}
                       </span>
                       <span className="mt-1 block h-1 rounded-full bg-surface-2">
-                        <span className="block h-1 rounded-full" style={{ width: `${Math.max(1, c.pct * 100)}%`, background: seriesVar(c.colorSlot) }} />
+                        <span className="block h-1 rounded-full bg-chart-1" style={{ width: `${Math.max(1, c.pct * 100)}%` }} />
                       </span>
                     </td>
                     <td className="py-2 text-right font-medium">
@@ -152,13 +151,13 @@ export default async function Estadisticas({ searchParams }: { searchParams: Pro
           <Card>
             <CardHeader title="Evolución de categorías" subtitle="Tus 4 categorías con más gasto" />
             <CardBody>
-              <CategoryLines data={s.categorySeries} series={s.topCategories.map((c) => ({ key: c.key, name: c.name, color: seriesVar(c.slot) }))} height={220} />
+              <CategoryMultiples data={s.categorySeries} series={s.topCategories.map((c) => ({ key: c.key, name: c.name }))} />
             </CardBody>
           </Card>
           <Card>
             <CardHeader title="Microgastos" subtitle={`Compras menores a ${money(user.microThresholdCents)} por ${UNIT[g]}`} action={<Link href="/fugas" className="text-[13px] text-accent hover:underline">Analizar</Link>} />
             <CardBody>
-              <SingleBars data={s.series.map((p) => ({ label: p.label, value: p.microCents }))} name="Microgastos" color="var(--series-5)" height={160} />
+              <SingleBars data={s.series.map((p) => ({ label: p.label, value: p.microCents }))} name="Microgastos" height={160} />
             </CardBody>
           </Card>
         </div>
@@ -172,7 +171,7 @@ function DataTable({ caption, headers, rows }: { caption: string; headers: strin
   return (
     <details className="mt-3 text-[12px]">
       <summary className="cursor-pointer text-muted hover:text-fg">Ver como tabla</summary>
-      <div className="mt-2 max-h-56 overflow-auto rounded-lg border border-border">
+      <div className="mt-2 max-h-56 overflow-auto rounded-2xl border border-border">
         <table className="money w-full">
           <caption className="sr-only">{caption}</caption>
           <thead className="bg-surface-2 text-left text-muted">
