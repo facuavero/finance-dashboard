@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { Ban, Check, Eye, KeyRound, ListChecks, Lock, Plus, Search, Sparkles, TrendingUp, type LucideIcon } from 'lucide-react'
-import { Logo } from '@/components/app/logo'
+import { Gem, Logo } from '@/components/app/logo'
 import { EstimateTag } from '@/components/app/states'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -75,8 +75,8 @@ function SectionHead({ label, title, body, className }: { label: string; title: 
   return (
     <div className={cn('max-w-[640px]', className)}>
       <p className="label-caps">{label}</p>
-      <h2 className="mt-3 text-[28px] leading-[1.1] font-semibold tracking-[-0.03em] sm:text-[36px]">{title}</h2>
-      {body && <p className="mt-3 text-[16px] text-fg-2">{body}</p>}
+      <h2 className="display mt-4 text-[40px] sm:text-[56px]">{title}</h2>
+      {body && <p className="mt-4 text-[17px] text-fg-2">{body}</p>}
     </div>
   )
 }
@@ -106,14 +106,14 @@ export function Landing({ demo }: { demo: boolean }) {
       </a>
 
       {/* header: producto a la izquierda, acción a la derecha (current) */}
-      <header className="sticky top-0 z-40 border-b border-border bg-bg">
-        <div className="mx-auto flex h-14 max-w-[1160px] items-center gap-6 px-4 sm:px-6">
+      <header className="sticky top-0 z-40 border-b border-border bg-bg/80 backdrop-blur-md">
+        <div className="mx-auto flex h-16 max-w-[1160px] items-center gap-6 px-4 sm:px-6">
           <Link href="/" aria-label="Caudal, inicio">
             <Logo />
           </Link>
-          <nav aria-label="Secciones" className="hidden items-center gap-5 text-[14px] text-fg-2 md:flex">
+          <nav aria-label="Secciones" className="hidden items-center gap-0.5 rounded-full border border-border bg-surface/60 p-1 text-[13.5px] text-muted md:flex">
             {NAV.map((n) => (
-              <a key={n.href} href={n.href} className="hover:text-fg">
+              <a key={n.href} href={n.href} className="rounded-full px-3.5 py-1.5 transition-colors hover:bg-surface-3 hover:text-fg">
                 {n.label}
               </a>
             ))}
@@ -131,11 +131,11 @@ export function Landing({ demo }: { demo: boolean }) {
 
       <main id="contenido">
         {/* hero: titular + ctas, y el producto ocupa más pantalla que el texto (titan, midday) */}
-        <section className="mx-auto max-w-[1160px] px-4 pt-12 sm:px-6 sm:pt-20">
+        <section className="mx-auto max-w-[1160px] px-4 pt-14 sm:px-6 sm:pt-24">
           <p className="label-caps">Inteligencia financiera personal</p>
-          <h1 className="mt-4 text-[40px] leading-[1.02] font-semibold tracking-[-0.04em] sm:text-[48px] md:text-[56px] lg:text-[68px]">
+          <h1 className="display mt-5 text-[52px] leading-[0.98] sm:text-[72px] md:text-[88px] lg:text-[104px]">
             <span className="block">Dejá de anotar gastos.</span>
-            <span className="block text-muted">Empezá a entenderlos.</span>
+            <span className="block text-muted italic">Empezá a entenderlos.</span>
           </h1>
           <div className="mt-6 grid gap-6 lg:mt-8 lg:grid-cols-2 lg:items-end lg:gap-16">
             <p className="max-w-[560px] text-[17px] leading-relaxed text-fg-2">Caudal te dice qué pasó con tu plata, por qué pasó, qué puede pasar y qué conviene hacer ahora. Con tus números, no con promedios de internet.</p>
@@ -145,7 +145,7 @@ export function Landing({ demo }: { demo: boolean }) {
             </div>
           </div>
 
-          <figure className="mt-10 sm:mt-14">
+          <figure className="mt-12 sm:mt-16">
             <ProductPreview />
             <figcaption className="mt-3 text-center text-[12px] text-muted">El inicio de la cuenta demo. Lo estimado siempre dice estimado.</figcaption>
           </figure>
@@ -153,8 +153,8 @@ export function Landing({ demo }: { demo: boolean }) {
           <dl className="mt-10 grid grid-cols-2 border-t border-border sm:mt-14 lg:grid-cols-4">
             {FACTS.map((f, i) => (
               <div key={f.label} className={cn('border-border py-5 pr-4', i % 2 === 1 && 'border-l pl-4 lg:pl-6', i >= 2 && 'border-t lg:border-t-0', i === 2 && 'lg:border-l lg:pl-6')}>
-                <dt className="text-[13px] text-muted">{f.label}</dt>
-                <dd className="mt-1 font-mono text-[18px] font-medium tracking-[-0.01em] sm:text-[22px]">{f.value}</dd>
+                <dt className="label-caps">{f.label}</dt>
+                <dd className="mt-2 font-mono text-[20px] font-medium tracking-[-0.03em] sm:text-[26px]">{f.value}</dd>
               </div>
             ))}
           </dl>
@@ -164,7 +164,7 @@ export function Landing({ demo }: { demo: boolean }) {
         <section aria-labelledby="preguntas-clave" className="mt-16 border-y border-border bg-surface sm:mt-24">
           <div className="mx-auto max-w-[1160px] px-4 py-16 sm:px-6 sm:py-24">
             <SectionHead label="Qué hace distinto" title={<span id="preguntas-clave">Cada pantalla responde cuatro preguntas.</span>} body="Un tracker te muestra en qué gastaste. Caudal sigue de largo." />
-            <ol className="mt-10 grid gap-px overflow-hidden rounded-[10px] border border-border bg-border sm:grid-cols-2 lg:grid-cols-4">
+            <ol className="mt-10 grid gap-px overflow-hidden rounded-card border border-border bg-border sm:grid-cols-2 lg:grid-cols-4">
               {QUESTIONS.map(({ n, icon: Icon, title, body, estimate }) => (
                 <li key={n} className="flex flex-col bg-surface p-5">
                   <div className="flex items-center justify-between">
@@ -173,7 +173,7 @@ export function Landing({ demo }: { demo: boolean }) {
                     </span>
                     <span className="font-mono text-[12px] text-muted">{n}</span>
                   </div>
-                  <h3 className="mt-6 flex items-center gap-2 text-[17px] font-semibold tracking-[-0.01em]">
+                  <h3 className="display mt-8 flex items-center gap-2 text-[28px]">
                     {title} {estimate && <EstimateTag />}
                   </h3>
                   <p className="mt-2 text-[14px] text-fg-2">{body}</p>
@@ -201,7 +201,7 @@ export function Landing({ demo }: { demo: boolean }) {
                   <li key={s.title} className="flex gap-4 py-4">
                     <span className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full bg-surface-2 font-mono text-[12px] text-fg-2">{i + 1}</span>
                     <div>
-                      <h3 className="text-[15px] font-semibold">{s.title}</h3>
+                      <h3 className="text-[15px] font-medium">{s.title}</h3>
                       <p className="mt-0.5 text-[14px] text-fg-2">{s.body}</p>
                     </div>
                   </li>
@@ -210,16 +210,16 @@ export function Landing({ demo }: { demo: boolean }) {
             </div>
             <div className="space-y-4">
               <Recommendation />
-              <div className="rounded-[10px] border border-border bg-bg p-4" aria-hidden>
+              <div className="rounded-card border border-border bg-bg p-4" aria-hidden>
                 <div className="flex items-center gap-2">
-                  <span className="flex h-10 flex-1 items-center rounded-lg border border-border bg-surface px-3 text-[14px] text-muted">Preguntale a Caudal sobre tu plata…</span>
-                  <span className="flex size-10 items-center justify-center rounded-lg bg-fg text-bg">
+                  <span className="flex h-11 flex-1 items-center rounded-full bg-surface-2 px-4 text-[14px] text-muted">Preguntale a Caudal sobre tu plata…</span>
+                  <span className="flex size-11 items-center justify-center rounded-full bg-fg text-bg">
                     <Sparkles className="size-4" />
                   </span>
                 </div>
                 <div className="mt-3 flex flex-wrap gap-1.5">
                   {SUGGESTED_QUESTIONS.map((q) => (
-                    <span key={q} className="rounded-full border border-border bg-surface px-2.5 py-1 text-[12px] text-fg-2">
+                    <span key={q} className="rounded-full bg-surface-2 px-3 py-1.5 text-[12px] text-fg-2">
                       {q}
                     </span>
                   ))}
@@ -237,12 +237,12 @@ export function Landing({ demo }: { demo: boolean }) {
             {TIMELINE.map((t, i) => (
               <li key={t.when} className="relative">
                 <div className="flex items-center gap-3">
-                  <span className={cn('size-2.5 rounded-full border-2', i === 0 ? 'border-accent bg-accent' : 'border-border-strong bg-bg')} aria-hidden />
-                  <span className="rounded-md border border-border bg-surface px-2 py-0.5 text-[12px] font-medium text-fg-2">{t.when}</span>
+                  <span className={cn('size-2.5 rounded-full border-2', i === 0 ? 'border-accent-solid bg-accent-solid' : 'border-border-strong bg-bg')} aria-hidden />
+                  <span className="rounded-full border border-border-strong px-3 py-1 font-mono text-[11px] tracking-[0.04em] text-fg-2 uppercase">{t.when}</span>
                   {i < TIMELINE.length - 1 && <span className="hidden h-px flex-1 bg-border md:block" aria-hidden />}
                 </div>
-                <div className="mt-4 rounded-[10px] border border-border bg-surface p-5">
-                  <h3 className="text-[16px] font-semibold tracking-[-0.01em]">{t.title}</h3>
+                <div className="mt-4 rounded-card border border-border bg-surface p-5">
+                  <h3 className="display text-[28px]">{t.title}</h3>
                   <ul className="mt-3 space-y-2">
                     {t.items.map((item) => (
                       <li key={item} className="flex gap-2 text-[14px] text-fg-2">
@@ -268,13 +268,13 @@ export function Landing({ demo }: { demo: boolean }) {
                   <span className="flex size-10 items-center justify-center rounded-full border border-border bg-bg">
                     <Icon className="size-[18px] text-fg-2" aria-hidden />
                   </span>
-                  <h3 className="mt-4 text-[16px] font-semibold tracking-[-0.01em]">{title}</h3>
+                  <h3 className="display mt-5 text-[28px]">{title}</h3>
                   <p className="mt-2 text-[14px] text-fg-2">{body}</p>
                 </div>
               ))}
             </div>
             <div className="mt-12 grid gap-6 border-t border-border pt-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
-              <h3 className="text-[20px] font-semibold tracking-[-0.02em]">Lo que Caudal no hace</h3>
+              <h3 className="display text-[36px]">Lo que Caudal no hace</h3>
               <ul className="divide-y divide-border border-y border-border">
                 {DOES_NOT.map((d) => (
                   <li key={d} className="flex items-center gap-3 py-3 text-[15px]">
@@ -297,9 +297,11 @@ export function Landing({ demo }: { demo: boolean }) {
           <div className="divide-y divide-border border-y border-border">
             {FAQ.map((f) => (
               <details key={f.q} name="faq" className="group">
-                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 py-4 text-[16px] font-medium [&::-webkit-details-marker]:hidden">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 py-5 text-[17px] font-medium [&::-webkit-details-marker]:hidden">
                   {f.q}
-                  <Plus className="size-4 shrink-0 text-muted transition-transform duration-200 group-open:rotate-45" aria-hidden />
+                  <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-surface-2 transition-colors group-open:bg-accent-solid group-open:text-on-accent">
+                    <Plus className="size-4 transition-transform duration-200 group-open:rotate-45" aria-hidden />
+                  </span>
                 </summary>
                 <p className="-mt-1 pr-8 pb-5 text-[15px] text-fg-2">{f.a}</p>
               </details>
@@ -308,10 +310,12 @@ export function Landing({ demo }: { demo: boolean }) {
         </section>
 
         {/* cierre: una frase y la misma acción (mercury) */}
-        <section className="border-t border-border bg-surface-2">
-          <div className="mx-auto flex max-w-[1160px] flex-col items-center px-4 py-16 text-center sm:px-6 sm:py-24">
-            <h2 className="max-w-[560px] text-[28px] leading-[1.1] font-semibold tracking-[-0.03em] sm:text-[40px]">Mirá tu mes con otros ojos.</h2>
-            <p className="mt-3 text-[16px] text-fg-2">{demo ? 'Entrá a la demo y fijate qué te diría Caudal.' : 'Creá tu cuenta y cargá tu primer gasto.'}</p>
+        <section className="relative overflow-hidden border-t border-border">
+          <div className="pointer-events-none absolute top-1/2 left-1/2 size-[720px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(closest-side,var(--glow-strong),transparent)]" aria-hidden />
+          <div className="relative mx-auto flex max-w-[1160px] flex-col items-center px-4 py-20 text-center sm:px-6 sm:py-32">
+            <Gem className="size-14" />
+            <h2 className="display mt-6 max-w-[720px] text-[48px] sm:text-[72px]">Mirá tu mes con otros ojos.</h2>
+            <p className="mt-4 text-[17px] text-fg-2">{demo ? 'Entrá a la demo y fijate qué te diría Caudal.' : 'Creá tu cuenta y cargá tu primer gasto.'}</p>
             <Ctas demo={demo} className="mt-7 w-full justify-center sm:w-auto" />
           </div>
         </section>

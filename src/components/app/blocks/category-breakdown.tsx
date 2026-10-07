@@ -29,7 +29,7 @@ export function CategoryBreakdown({ slices, subtitle, href = '/estadisticas' }: 
         ) : (
           <>
             <p className="flex items-baseline gap-2">
-              <Money cents={total} className="text-[26px] leading-none font-semibold tracking-[-0.02em]" />
+              <Money cents={total} className="text-[30px] leading-none font-medium" />
               <span className="text-[13px] text-muted">gastado</span>
             </p>
             <ul className="mt-5 space-y-3.5">

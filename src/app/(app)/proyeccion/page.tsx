@@ -22,7 +22,7 @@ export default async function Proyeccion() {
     <>
       <PageHeader title="Proyección" description="Qué puede pasar: saldo a fin de mes, capacidad de ahorro y hacia dónde va tu capital. Todo lo estimado está marcado como tal." />
 
-      <div className="mb-5 flex flex-wrap items-center gap-3 rounded-lg border border-border bg-surface px-4 py-2.5 text-[13px] text-fg-2">
+      <div className="mb-5 flex flex-wrap items-center gap-3 rounded-2xl border border-border bg-surface px-4 py-2.5 text-[13px] text-fg-2">
         <span className="flex items-center gap-1.5">
           <RealTag /> dato cargado por vos
         </span>
@@ -37,7 +37,7 @@ export default async function Proyeccion() {
           <p className="flex items-center gap-2 text-[13px] text-fg-2">
             Saldo estimado al {dateShort(f.series.at(-1)?.date ?? today)} <EstimateTag />
           </p>
-          <p className="mt-1 text-[40px] leading-none font-semibold tracking-[-0.03em]">
+          <p className="mt-3 text-[44px] leading-none font-medium">
             <Money cents={f.endOfMonthBalanceCents} />
           </p>
           <ul className="mt-5 space-y-2.5 text-[13px]">
@@ -85,7 +85,7 @@ export default async function Proyeccion() {
             <p className="flex items-center gap-2 text-[13px] text-fg-2">
               Por mes, con tu comportamiento actual <EstimateTag />
             </p>
-            <p className="mt-1 text-[32px] leading-none font-semibold tracking-[-0.02em]">
+            <p className="mt-1 text-[40px] leading-none font-medium">
               <Money cents={cap.capacityCents} />
             </p>
             <ul className="mt-5 space-y-2.5 text-[13px]">
@@ -109,7 +109,7 @@ export default async function Proyeccion() {
 
       <section id="simulador" className="mt-10 scroll-mt-20" aria-labelledby="sim-title">
         <SectionLabel>Simulador</SectionLabel>
-        <h2 id="sim-title" className="mt-1 text-[20px] font-semibold tracking-[-0.02em]">
+        <h2 id="sim-title" className="mt-1 display text-[30px] sm:text-[34px]">
           ¿Qué pasa si cambiás algo?
         </h2>
         <p className="mt-1 text-[13px] text-muted">Mové los valores y mirá los escenarios a 1, 3, 5 y 10 años.</p>

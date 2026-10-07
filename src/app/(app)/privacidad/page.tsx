@@ -109,7 +109,7 @@ export default async function Privacidad() {
             <p className="text-fg-2">Los proveedores gratuitos pueden usar lo que reciben para mejorar sus modelos. Si no querés eso, apagá la IA externa: las recomendaciones siguen funcionando con el motor local.</p>
             <details>
               <summary className="cursor-pointer text-accent hover:underline">Ver exactamente lo que se enviaría ahora</summary>
-              <pre className="money mt-2 max-h-80 overflow-auto rounded-lg bg-surface-2 p-3 font-mono text-[11px] leading-relaxed">{JSON.stringify(payload, null, 2)}</pre>
+              <pre className="money mt-2 max-h-80 overflow-auto rounded-2xl bg-surface-2 p-3 font-mono text-[11px] leading-relaxed">{JSON.stringify(payload, null, 2)}</pre>
             </details>
           </CardBody>
         </Card>

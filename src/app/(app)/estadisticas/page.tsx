@@ -171,7 +171,7 @@ function DataTable({ caption, headers, rows }: { caption: string; headers: strin
   return (
     <details className="mt-3 text-[12px]">
       <summary className="cursor-pointer text-muted hover:text-fg">Ver como tabla</summary>
-      <div className="mt-2 max-h-56 overflow-auto rounded-lg border border-border">
+      <div className="mt-2 max-h-56 overflow-auto rounded-2xl border border-border">
         <table className="money w-full">
           <caption className="sr-only">{caption}</caption>
           <thead className="bg-surface-2 text-left text-muted">

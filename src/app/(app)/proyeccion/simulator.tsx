@@ -64,11 +64,11 @@ export function Simulator({ defaults }: { defaults: V }) {
       <div className="space-y-4">
         <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
           {result.milestones.map((m) => (
-            <Card key={m.years} className="p-4">
-              <p className="text-[13px] text-fg-2">
+            <Card key={m.years} className="p-5">
+              <p className="label-caps">
                 En {m.years} {m.years === 1 ? 'año' : 'años'}
               </p>
-              <p className="mt-1 text-[20px] font-semibold tracking-[-0.02em]">
+              <p className="mt-3 text-[20px] leading-none font-medium xl:text-[22px]">
                 <Money cents={m.totalCents} compact={m.totalCents >= 100_000_000_00} />
               </p>
               <p className="mt-1 text-[12px] text-muted">
@@ -86,7 +86,7 @@ export function Simulator({ defaults }: { defaults: V }) {
         <Card className="p-5">
           <SimulatorChart data={data} />
         </Card>
-        <p className="flex gap-2 rounded-lg border border-border bg-surface-2 px-4 py-3 text-[13px] text-fg-2" role="note">
+        <p className="flex gap-2 rounded-2xl border border-border bg-surface-2 px-4 py-3 text-[13px] text-fg-2" role="note">
           <ShieldAlert className="mt-0.5 size-4 shrink-0 text-muted" aria-hidden />
           <span>
             <span className="font-medium text-fg">Esto es una proyección, no una garantía.</span> Supone aportes constantes y un rendimiento fijo, cosas que en la realidad varían. El rango pesimista–optimista usa ±3 puntos de rendimiento. No es asesoramiento financiero.

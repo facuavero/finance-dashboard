@@ -1,4 +1,4 @@
-import { ArrowDownRight, ArrowLeftRight, ArrowUpRight, ChartColumn, Droplets, LayoutDashboard, Minus, PiggyBank, Search, Sparkles, Target, Telescope, type LucideIcon } from 'lucide-react'
+import { ArrowDownRight, ArrowUpRight, Minus, Search, Sparkles } from 'lucide-react'
 import { Logo } from '@/components/app/logo'
 import { Card } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
@@ -60,106 +60,112 @@ const CAPITAL: Point[] = [
 
 const MOBILE_LABELS = [0, 2, 4, 7]
 
-const NAV: { label: string; icon: LucideIcon }[] = [
-  { label: 'Inicio', icon: LayoutDashboard },
-  { label: 'Movimientos', icon: ArrowLeftRight },
-  { label: 'Presupuestos', icon: PiggyBank },
-  { label: 'Objetivos', icon: Target },
-  { label: 'Estadísticas', icon: ChartColumn },
-  { label: 'Fugas de dinero', icon: Droplets },
-  { label: 'Proyección', icon: Telescope },
-  { label: 'IA financiera', icon: Sparkles },
-]
+const TABS = ['Inicio', 'Movimientos', 'Presupuestos', 'Objetivos', 'Análisis', 'Agenda']
 
 const KPIS = [
-  { label: 'Ingresos del mes', value: '$1.970.000', delta: 'igual', trend: 'flat' },
-  { label: 'Gastos del mes', value: '$812.299', delta: '17%', trend: 'down' },
+  { label: 'Ingresos', value: '$1.970.000', delta: 'igual', trend: 'flat' },
+  { label: 'Gastos', value: '$812.299', delta: '17%', trend: 'down' },
   { label: 'Ahorro neto', value: '$1.157.701', delta: '$161.200', trend: 'up' },
   { label: 'Tasa de ahorro', value: '59%', delta: '8 pts', trend: 'up' },
 ] as const
 
-/** el inicio de la app tal como lo muestra la cuenta demo (midday + mercury: el producto es la prueba) */
+const FEED = [
+  { title: 'Tenés una reserva en Booking.com en 8 días y todavía no registraste ese gasto.', body: 'Gmail indica $312.000.' },
+  { title: 'Netflix.com se renueva mañana', body: 'Subió 15%. Revisá si el plan te sigue sirviendo.' },
+]
+
+/** el inicio de la app tal como lo muestra la cuenta demo, con el shell v3 (midday + mercury: el producto es la prueba) */
 export function ProductPreview() {
   return (
-    <div className="rounded-2xl border border-border bg-surface-2 p-1.5 sm:p-2.5">
-      <div className="flex overflow-hidden rounded-xl border border-border bg-bg">
-        <div className="hidden w-[184px] shrink-0 flex-col gap-0.5 border-r border-border px-2.5 py-3.5 lg:flex">
-          <Logo className="mb-4 px-1.5 [&_svg]:size-6 [&>span:last-child]:text-[15px]" />
-          {NAV.map(({ label, icon: Icon }, i) => (
-            <span key={label} className={cn('flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-[13px]', i === 0 ? 'border border-border bg-surface font-medium text-fg' : 'text-fg-2')}>
-              <Icon className={cn('size-4', i === 0 ? 'text-accent' : 'text-muted')} aria-hidden />
-              {label}
-            </span>
-          ))}
+    <div className="glow-ring rounded-[28px] bg-surface-2 p-1.5 sm:p-2">
+      <div className="overflow-hidden rounded-[22px] border border-border bg-bg">
+        {/* barra superior con tabs pill */}
+        <div className="flex h-12 items-center gap-3 border-b border-border px-3 sm:px-4">
+          <Logo className="[&_svg]:size-5 [&>span:last-child]:text-[18px]" />
+          <span className="ml-3 hidden items-center gap-0.5 rounded-full border border-border bg-surface/60 p-0.5 lg:flex">
+            {TABS.map((t, i) => (
+              <span key={t} className={cn('flex items-center gap-1 rounded-full px-2.5 py-1 text-[11.5px]', i === 0 ? 'bg-surface-3 font-medium text-fg' : 'text-muted')}>
+                {i === 0 && <span className="size-1 rounded-full bg-accent-solid" />}
+                {t}
+              </span>
+            ))}
+          </span>
+          <span className="ml-auto flex items-center gap-2">
+            <Search className="size-3.5 text-muted" aria-hidden />
+            <span className="rounded-full bg-accent-solid px-2.5 py-1 text-[11px] font-medium text-on-accent">+ Nuevo</span>
+          </span>
         </div>
 
-        <div className="min-w-0 flex-1">
-          <div className="flex h-11 items-center gap-3 border-b border-border px-3 sm:px-4">
-            <span className="flex h-7 w-full max-w-[280px] items-center gap-2 rounded-lg border border-border bg-surface px-2.5 text-[12px] text-muted">
-              <Search className="size-3.5" aria-hidden /> Buscar o ir a…
-              <kbd className="ml-auto rounded border border-border px-1 font-mono text-[10px]">⌘K</kbd>
-            </span>
-            <span className="ml-auto shrink-0 rounded-full bg-accent-soft px-2 py-0.5 text-[11px] font-medium text-accent">Cuenta demo</span>
-          </div>
+        <div className="p-3 sm:p-6">
+          <p className="font-mono text-[10px] tracking-[0.08em] text-muted uppercase">Miércoles 7 de octubre</p>
+          <p className="display mt-1 text-[28px] sm:text-[36px]">Buenas tardes, Sam</p>
 
-          <div className="space-y-3 p-3 sm:space-y-4 sm:p-5">
-            <p className="text-[18px] font-semibold tracking-[-0.02em] sm:text-[20px]">Buenas tardes, Sam</p>
-
-            <div className="grid gap-3 sm:gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.25fr)]">
-              <Card className="p-4 sm:p-5">
-                <div className="flex items-center gap-2">
-                  <Sparkles className="size-4 text-accent" aria-hidden />
-                  <span className="text-[13px] font-medium">Resumen del mes</span>
-                  <span className="ml-auto text-[11px] text-muted">Motor de reglas local</span>
+          <div className="mt-4 grid gap-3 sm:gap-4 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
+            <Card className="overflow-hidden">
+              <div className="flex flex-wrap items-start justify-between gap-2 px-4 pt-4 sm:px-5">
+                <div>
+                  <p className="font-mono text-[10px] tracking-[0.08em] text-muted uppercase">Capital disponible</p>
+                  <p className="mt-2 font-mono text-[32px] leading-none font-medium tracking-[-0.05em] sm:text-[40px]">$3.724.731</p>
+                  <p className="mt-2 text-[11.5px] text-muted">
+                    <span className="font-mono text-fg">+$1.157.701</span> desde el 1 de octubre · cierre estimado <span className="font-mono text-fg-2">$2.623.042</span>
+                  </p>
                 </div>
-                <p className="mt-3 text-[14px] leading-relaxed sm:text-[15px]">En lo que va del mes ingresaron $1.970.000 y gastaste $812.299, 17% menos que a esta altura del mes pasado. Tu mayor gasto fue hogar (64% del total). Si seguís así, cerrás el mes con $2.623.042 disponibles (estimado).</p>
-                <p className="mt-3 text-[13px] font-medium text-accent">Ver recomendaciones</p>
-              </Card>
-
-              <Card className="pt-4">
-                <div className="flex flex-wrap items-start justify-between gap-2 px-4 sm:px-5">
-                  <div>
-                    <p className="text-[13px] text-fg-2">Capital disponible</p>
-                    <p className="mt-1 text-[30px] leading-none font-semibold tracking-[-0.03em] sm:text-[36px]">$3.724.731</p>
-                    <p className="mt-2 text-[12px] text-muted">
-                      <span className="text-positive">+$1.157.701</span> desde el 1 de octubre · cierre estimado <span className="font-medium text-fg-2">$2.623.042</span>
-                    </p>
-                  </div>
-                  <TrendLegend />
-                </div>
-                <div className="px-4 pt-4 pb-3 sm:px-5">
-                  <TrendMock points={CAPITAL} estimateFrom={6} min={1.2} max={4} className="h-[110px] sm:h-[140px]" />
-                  {/* cada etiqueta va en la x de su punto. en mobile quedan menos para que no se pisen */}
-                  <div className="relative mt-2 h-4 text-[10px] text-muted sm:text-[11px]">
-                    {CAPITAL.map((p, i) => {
-                      const last = i === CAPITAL.length - 1
-                      return (
-                        <span key={p.label} className={cn('absolute top-0 whitespace-nowrap', i === 0 ? '' : last ? '-translate-x-full' : '-translate-x-1/2', !MOBILE_LABELS.includes(i) && 'hidden sm:inline')} style={{ left: `${(i / (CAPITAL.length - 1)) * 100}%` }}>
-                          {p.label}
-                        </span>
-                      )
-                    })}
-                  </div>
-                </div>
-              </Card>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-              {KPIS.map((k) => {
-                const Icon = k.trend === 'flat' ? Minus : k.trend === 'up' ? ArrowUpRight : ArrowDownRight
-                return (
-                  <Card key={k.label} className="p-3.5 sm:p-4">
-                    <p className="text-[12px] text-fg-2 sm:text-[13px]">{k.label}</p>
-                    <p className="mt-1 text-[17px] leading-tight font-semibold tracking-[-0.02em] sm:text-[20px]">{k.value}</p>
-                    <p className={cn('mt-1 flex items-center gap-1 text-[11px] font-medium sm:text-[12px]', k.trend === 'flat' ? 'text-muted' : 'text-positive')}>
-                      <Icon className="size-3.5 shrink-0" aria-hidden />
-                      <span>
-                        {k.delta} <span className="hidden font-normal text-muted sm:inline">vs. mes anterior</span>
+                <TrendLegend />
+              </div>
+              <div className="px-4 pt-4 pb-3 sm:px-5">
+                <TrendMock points={CAPITAL} estimateFrom={6} min={1.2} max={4} className="h-[110px] sm:h-[150px]" />
+                {/* cada etiqueta va en la x de su punto. en mobile quedan menos para que no se pisen */}
+                <div className="relative mt-2 h-4 text-[10px] text-muted sm:text-[11px]">
+                  {CAPITAL.map((p, i) => {
+                    const last = i === CAPITAL.length - 1
+                    return (
+                      <span key={p.label} className={cn('absolute top-0 whitespace-nowrap', i === 0 ? '' : last ? '-translate-x-full' : '-translate-x-1/2', !MOBILE_LABELS.includes(i) && 'hidden sm:inline')} style={{ left: `${(i / (CAPITAL.length - 1)) * 100}%` }}>
+                        {p.label}
                       </span>
-                    </p>
-                  </Card>
-                )
-              })}
+                    )
+                  })}
+                </div>
+              </div>
+              <div className="grid grid-cols-2 border-t border-border sm:grid-cols-4">
+                {KPIS.map((k, i) => {
+                  const Icon = k.trend === 'flat' ? Minus : k.trend === 'up' ? ArrowUpRight : ArrowDownRight
+                  return (
+                    <div key={k.label} className={cn('px-4 py-3 sm:px-5', i % 2 === 1 && 'border-l border-border', i >= 2 && 'border-t border-border sm:border-t-0', i === 2 && 'sm:border-l')}>
+                      <p className="font-mono text-[9.5px] tracking-[0.08em] text-muted uppercase">{k.label}</p>
+                      <p className="mt-1.5 font-mono text-[15px] leading-none font-medium tracking-[-0.045em] sm:text-[17px]">{k.value}</p>
+                      <p className="mt-1.5 flex items-center gap-1 text-[11px] font-medium text-fg-2">
+                        <Icon className="size-3 shrink-0" aria-hidden />
+                        {k.delta}
+                      </p>
+                    </div>
+                  )
+                })}
+              </div>
+            </Card>
+
+            <div className="hidden space-y-3 sm:space-y-4 lg:block">
+              <Card className="relative overflow-hidden p-5">
+                <div className="pointer-events-none absolute -top-20 -right-16 size-56 rounded-full bg-[radial-gradient(closest-side,var(--glow-strong),transparent)]" aria-hidden />
+                <div className="relative flex items-center gap-2">
+                  <Sparkles className="size-3.5 text-accent" aria-hidden />
+                  <span className="text-[12px] font-medium">Resumen del mes</span>
+                </div>
+                <p className="relative mt-3 text-[13.5px] leading-relaxed font-medium">En lo que va del mes ingresaron $1.970.000 y gastaste $812.299, 17% menos que a esta altura del mes pasado. Tu mayor gasto fue hogar (64% del total). Si seguís así, cerrás el mes con $2.623.042 disponibles (estimado).</p>
+              </Card>
+              <Card className="p-5">
+                <p className="text-[12px] font-medium">Lo importante</p>
+                <ul className="mt-2 divide-y divide-border">
+                  {FEED.map((f) => (
+                    <li key={f.title} className="flex gap-2.5 py-2.5">
+                      <span className="mt-1 size-1.5 shrink-0 rounded-full bg-accent-solid" aria-hidden />
+                      <span>
+                        <span className="block text-[12px] leading-snug font-medium">{f.title}</span>
+                        <span className="mt-0.5 block text-[11px] text-muted">{f.body}</span>
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </Card>
             </div>
           </div>
         </div>

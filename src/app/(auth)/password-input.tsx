@@ -25,7 +25,7 @@ export function PasswordInput({ id, name, invalid, autoComplete = 'new-password'
         <div className="flex items-center gap-2" aria-live="polite">
           <div className="flex flex-1 gap-1">
             {[0, 1, 2, 3].map((i) => (
-              <span key={i} className={cn('h-1 flex-1 rounded-full', i < strength ? (strength <= 1 ? 'bg-critical' : strength === 2 ? 'bg-warning-mark' : 'bg-positive') : 'bg-surface-3')} />
+              <span key={i} className={cn('h-1 flex-1 rounded-full', i < strength ? (strength <= 1 ? 'bg-accent-solid' : strength === 2 ? 'bg-warning-mark' : 'bg-positive') : 'bg-surface-3')} />
             ))}
           </div>
           <span className="text-[12px] text-muted">{LABELS[strength]}</span>

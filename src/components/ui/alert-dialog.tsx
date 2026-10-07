@@ -9,9 +9,9 @@ export function ConfirmDialog({ trigger, title, description, confirmLabel, onCon
     <A.Root open={open} onOpenChange={onOpenChange}>
       {trigger && <A.Trigger asChild>{trigger}</A.Trigger>}
       <A.Portal>
-        <A.Overlay className="fixed inset-0 z-50 bg-black/40 animate-in" />
-        <A.Content className="fixed top-1/2 left-1/2 z-50 w-[calc(100%-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-xl border border-border bg-surface p-5 shadow-xl animate-slide-up">
-          <A.Title className="text-base font-semibold">{title}</A.Title>
+        <A.Overlay className="fixed inset-0 z-50 bg-black/60 backdrop-blur-[2px] animate-in" />
+        <A.Content className="fixed top-1/2 left-1/2 z-50 w-[calc(100%-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-3xl border border-border-strong bg-surface p-6 shadow-2xl animate-slide-up">
+          <A.Title className="display text-[26px]">{title}</A.Title>
           <A.Description asChild>
             <div className="mt-2 text-sm text-fg-2">{description}</div>
           </A.Description>

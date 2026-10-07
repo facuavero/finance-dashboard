@@ -12,9 +12,9 @@ centro de inteligencia financiera personal. no es un tracker de gastos: responde
 - gmail y google calendar vía oauth (solo lectura) cruzados con tus movimientos
 - centro de alertas priorizado y sin spam
 - privacidad explícita: qué se guarda, qué ve la ia, exportar y borrar todo
-- dark y light mode, responsive, modo privacidad para ocultar montos
+- oscuro por defecto con modo claro, responsive, modo privacidad para ocultar montos
 
-diseño basado en referencias reales de mobbin: ver [docs/referencias-diseño-finanzas-personales.md](docs/referencias-diseño-finanzas-personales.md) y [docs/propuesta-diseño.md](docs/propuesta-diseño.md). la landing pública (`/` sin sesión) sale de [docs/referencias-diseño-landing-caudal.md](docs/referencias-diseño-landing-caudal.md) y [docs/propuesta-landing.md](docs/propuesta-landing.md).
+diseño basado en referencias reales de mobbin: ver [docs/referencias-diseño-finanzas-personales.md](docs/referencias-diseño-finanzas-personales.md) y [docs/propuesta-diseño.md](docs/propuesta-diseño.md). la landing pública (`/` sin sesión) sale de [docs/referencias-diseño-landing-caudal.md](docs/referencias-diseño-landing-caudal.md) y [docs/propuesta-landing.md](docs/propuesta-landing.md). el sistema visual actual (v3: oscuro por defecto, navegación arriba, serif + mono, acento rubí) sale de [docs/referencias-diseño-caudal-v3.md](docs/referencias-diseño-caudal-v3.md).
 
 ## correrlo
 

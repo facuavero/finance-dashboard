@@ -33,7 +33,7 @@ export function MicroPatterns({ patterns, incomeCents }: { patterns: MicroPatter
           return (
             <Card key={p.key} className="p-5">
               <div className="flex items-center gap-3">
-                <span className="flex size-9 items-center justify-center rounded-lg bg-surface-2 text-fg-2">
+                <span className="flex size-9 items-center justify-center rounded-2xl bg-surface-2 text-fg-2">
                   <Icon className="size-4" aria-hidden />
                 </span>
                 <div className="min-w-0 flex-1">

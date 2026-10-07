@@ -1,9 +1,20 @@
 import type { Metadata, Viewport } from 'next'
 import { GeistSans } from 'geist/font/sans'
 import { GeistMono } from 'geist/font/mono'
+import localFont from 'next/font/local'
 import Script from 'next/script'
 import { Toaster } from 'sonner'
 import './globals.css'
+
+// serif para títulos y momentos (docs/propuesta-diseño.md, tipografía: tres voces)
+const serif = localFont({
+  src: [
+    { path: './fonts/instrument-serif-latin-400-normal.woff2', weight: '400', style: 'normal' },
+    { path: './fonts/instrument-serif-latin-400-italic.woff2', weight: '400', style: 'italic' },
+  ],
+  variable: '--font-serif-display',
+  display: 'swap',
+})
 
 export const metadata: Metadata = {
   title: { default: 'Caudal', template: '%s · Caudal' },
@@ -12,23 +23,24 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#f5f5f5' },
-    { media: '(prefers-color-scheme: dark)', color: '#0a0a0a' },
+    { media: '(prefers-color-scheme: light)', color: '#09090a' },
+    { media: '(prefers-color-scheme: dark)', color: '#09090a' },
   ],
 }
 
-// aplica tema y modo privacidad antes del primer pintado (sin parpadeo)
-const bootScript = `(function(){try{var t=localStorage.getItem('caudal-theme');var d=t==='dark'||(t!=='light'&&matchMedia('(prefers-color-scheme: dark)').matches);var e=document.documentElement;if(d)e.classList.add('dark');if(localStorage.getItem('caudal-privacy')==='1')e.classList.add('privacy')}catch(_){}})()`
+// aplica tema y modo privacidad antes del primer pintado (sin parpadeo).
+// oscuro por defecto: el claro solo si la persona lo eligió
+const bootScript = `(function(){var e=document.documentElement;try{if(localStorage.getItem('caudal-theme')==='light')e.classList.remove('dark');if(localStorage.getItem('caudal-privacy')==='1')e.classList.add('privacy')}catch(_){}})()`
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es-AR" className={`${GeistSans.variable} ${GeistMono.variable}`} suppressHydrationWarning>
+    <html lang="es-AR" className={`dark ${GeistSans.variable} ${GeistMono.variable} ${serif.variable}`} suppressHydrationWarning>
       <body>
         <Script id="caudal-boot" strategy="beforeInteractive">
           {bootScript}
         </Script>
         {children}
-        <Toaster position="bottom-right" toastOptions={{ className: '!bg-surface !text-fg !border-border !rounded-xl' }} />
+        <Toaster position="bottom-right" toastOptions={{ className: '!bg-surface-2 !text-fg !border-border-strong !rounded-2xl' }} />
       </body>
     </html>
   )

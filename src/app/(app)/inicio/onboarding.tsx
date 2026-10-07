@@ -23,7 +23,7 @@ export function Onboarding({ name, welcome }: { name: string; welcome: boolean }
   return (
     <div className="mx-auto max-w-3xl py-4">
       <p className="label-caps">{welcome ? 'Cuenta creada' : 'Empecemos'}</p>
-      <h1 className="mt-2 text-[26px] font-semibold tracking-[-0.02em]">Hola, {name}. Armemos tu tablero.</h1>
+      <h1 className="display mt-3 text-[40px] sm:text-[52px]">Hola, {name}. Armemos tu tablero.</h1>
       <p className="mt-2 max-w-xl text-[15px] text-fg-2">Con unos pocos movimientos ya te mostramos en qué se va tu plata, cuánto podés ahorrar y qué gastos se vienen.</p>
       <ol className="mt-8 space-y-3">
         {steps.map((s, i) => (

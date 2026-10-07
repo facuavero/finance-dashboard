@@ -3,74 +3,77 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 /*
-  tokens: ver docs/propuesta-diseño.md.
-  todo es gris, blanco y negro. el rojo rubí es el único color y marca dos cosas:
-  interacción (activo, links, controles) y atención (excedido, anomalía, lo que empeoró).
+  tokens v3: ver docs/propuesta-diseño.md y docs/referencias-diseño-caudal-v3.md.
+  terminal financiera oscura (oscuro por defecto). grises, blanco, negro y un solo color: rubí.
+  el rubí marca el botón nuevo, lo activo y lo que pide atención. lo bueno va en tinta con flecha.
   el foco va en tinta: un borde rojo en un input se lee como error.
-  lo bueno no se pinta: va en tinta con flecha o ícono.
+  --glow es el brillo adiamantado de arriba de la página y detrás de los momentos clave.
 */
 :root {
-  --bg: #f5f5f5;
+  --bg: #f7f7f8;
   --surface: #ffffff;
-  --surface-2: #f2f2f2;
-  --surface-3: #e7e7e7;
-  --border: #e4e4e4;
-  --border-strong: #cfcfcf;
-  --text: #0a0a0a;
-  --text-2: #404040;
-  --muted: #6b6b6b;
-  /* rojo rubí: --accent para texto y trazos, --accent-solid para rellenos con texto blanco */
+  --surface-2: #f2f2f4;
+  --surface-3: #e7e7ea;
+  --border: #e6e6e9;
+  --border-strong: #d4d4d8;
+  --text: #0a0a0b;
+  --text-2: #52525b;
+  --muted: #6b6b74;
   --accent: #d0103a;
   --accent-solid: #d0103a;
   --accent-strong: #a80c2f;
   --accent-soft: #fdedf0;
   --on-accent: #ffffff;
-  /* estados: bueno = tinta, atención = rojo suave, crítico = rojo pleno */
-  --positive: #0a0a0a;
-  --positive-soft: #f2f2f2;
+  --glow: rgb(208 16 58 / 0.07);
+  --glow-strong: rgb(208 16 58 / 0.16);
+  /* estados: bueno = tinta, atención = rubí suave, crítico = rubí pleno */
+  --positive: #0a0a0b;
+  --positive-soft: #f2f2f4;
   --warning: #d0103a;
   --warning-mark: #ec7189;
   --warning-soft: #fdedf0;
   --critical: #d0103a;
   --critical-soft: #fce6ea;
-  --ring: #0a0a0a;
-  /* datos en escala de grises: serie principal en tinta, secundaria en gris */
-  --chart-1: #171717;
-  --chart-2: #8c8c8c;
-  --chart-3: #d4d4d4;
-  --grid: #ececec;
-  --axis: #c7c7c7;
+  --ring: #0a0a0b;
+  /* datos: serie principal en tinta, secundaria en gris */
+  --chart-1: #0a0a0b;
+  --chart-2: #8b8b94;
+  --chart-3: #d4d4d8;
+  --grid: #ececef;
+  --axis: #c4c4ca;
   color-scheme: light;
 }
 
 .dark {
-  --bg: #0a0a0a;
-  --surface: #141414;
-  --surface-2: #1c1c1c;
-  --surface-3: #262626;
-  --border: #262626;
-  --border-strong: #383838;
-  --text: #f5f5f5;
-  --text-2: #c4c4c4;
-  --muted: #8c8c8c;
-  --accent: #f2445f;
-  --accent-solid: #d0103a;
-  --accent-strong: #ff6079;
-  --accent-soft: #2a0e15;
+  --bg: #09090a;
+  --surface: #111113;
+  --surface-2: #18181b;
+  --surface-3: #232327;
+  --border: #1d1d21;
+  --border-strong: #2e2e33;
+  --text: #f4f4f5;
+  --text-2: #a1a1aa;
+  --muted: #7c7c85;
+  --accent: #ff4d6d;
+  --accent-solid: #e0123d;
+  --accent-strong: #ff6d88;
+  --accent-soft: #2b0d14;
   --on-accent: #ffffff;
-  --positive: #f5f5f5;
-  --positive-soft: #1c1c1c;
-  --warning: #f2445f;
+  --glow: rgb(224 18 61 / 0.16);
+  --glow-strong: rgb(224 18 61 / 0.32);
+  --positive: #f4f4f5;
+  --positive-soft: #18181b;
+  --warning: #ff4d6d;
   --warning-mark: #b0304a;
-  --warning-soft: #2a0e15;
-  --critical: #f2445f;
+  --warning-soft: #2b0d14;
+  --critical: #ff4d6d;
   --critical-soft: #3a111b;
-  --ring: #f5f5f5;
-  --chart-1: #e5e5e5;
-  --chart-2: #6e6e6e;
-  --chart-3: #333333;
-  --grid: #1f1f1f;
-  --axis: #3a3a3a;
+  --ring: #f4f4f5;
+  --chart-1: #f4f4f5;
+  --chart-2: #6e6e77;
+  --chart-3: #2e2e33;
+  --grid: #1a1a1e;
+  --axis: #34343a;
   color-scheme: dark;
 }
 
@@ -102,7 +105,8 @@
   --color-chart-3: var(--chart-3);
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
-  --radius-card: 10px;
+  --font-serif: var(--font-serif-display), ui-serif, Georgia, serif;
+  --radius-card: 18px;
   --animate-in: fade-in 160ms ease-out;
   --animate-slide-up: slide-up 200ms ease-out;
   --animate-slide-left: slide-left 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
@@ -129,7 +133,8 @@
     -webkit-text-size-adjust: 100%;
   }
   body {
-    background: var(--bg);
+    /* brillo rubí arriba de la página (uniswap): lo adiamantado */
+    background: radial-gradient(1100px 480px at 50% -160px, var(--glow), transparent 72%) no-repeat, var(--bg);
     color: var(--text);
     font-family: var(--font-sans);
     font-size: 14px;
@@ -155,6 +160,24 @@
     letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--muted);
+  }
+  /* títulos y momentos en serif */
+  .display {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    letter-spacing: -0.01em;
+    line-height: 1.05;
+  }
+  /* cifras protagonistas en mono */
+  .figure {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.04em;
+    font-weight: 500;
+  }
+  /* brillo detrás de un bloque clave (login, input de ia) */
+  .glow-ring {
+    box-shadow: 0 0 0 1px var(--border-strong), 0 0 90px -24px var(--glow-strong);
   }
   /* modo privacidad: oculta montos marcados */
   .privacy .money {

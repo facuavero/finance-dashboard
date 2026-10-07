@@ -6,7 +6,7 @@ export default async function ResetPage({ searchParams }: { searchParams: Promis
   if (!token) {
     return (
       <div>
-        <h1 className="text-2xl font-semibold tracking-[-0.02em]">Link inválido</h1>
+        <h1 className="display text-[44px]">Link inválido</h1>
         <p className="mt-2 text-sm text-muted">Al link le falta el código. Pedí uno nuevo.</p>
         <Link href="/recuperar" className="mt-4 inline-block text-sm text-accent hover:underline">
           Pedir un link nuevo

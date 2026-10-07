@@ -84,7 +84,7 @@ export default async function Calendario() {
                   className={cn('flex aspect-square flex-col items-center justify-center rounded-md border text-[11px]', d === today ? 'border-fg' : 'border-transparent', past && 'opacity-40')}
                   style={{ background: v ? `color-mix(in oklab, var(--chart-1) ${Math.round(15 + (v / maxDay) * 60)}%, var(--surface))` : 'var(--surface-2)' }}
                 >
-                  <span className={cn(v / maxDay > 0.5 && 'font-semibold')}>{Number(d.slice(8))}</span>
+                  <span className={cn('font-mono', v / maxDay > 0.5 && 'font-semibold text-bg')}>{Number(d.slice(8))}</span>
                 </div>
               )
             })}

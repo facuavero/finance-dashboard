@@ -16,7 +16,7 @@ type TipRow = { label: string; value: number | null; color: string; dashed?: boo
 
 function TooltipBox({ title, rows }: { title: string; rows: TipRow[] }) {
   return (
-    <div className="min-w-40 rounded-lg border border-border bg-surface px-3 py-2 text-[12px] shadow-lg">
+    <div className="min-w-40 rounded-xl border border-border-strong bg-surface-2 px-3 py-2 text-[12px] shadow-2xl shadow-black/30">
       <p className="mb-1 text-muted">{title}</p>
       {rows
         .filter((r) => r.value !== null && r.value !== undefined)
@@ -25,7 +25,7 @@ function TooltipBox({ title, rows }: { title: string; rows: TipRow[] }) {
             <svg width="12" height="4" aria-hidden>
               <line x1="0" y1="2" x2="12" y2="2" stroke={r.color} strokeWidth="2" strokeDasharray={r.dashed ? '3 2' : undefined} />
             </svg>
-            <span className="money num font-semibold text-fg">{money(r.value!)}</span>
+            <span className="money num font-mono font-medium text-fg">{money(r.value!)}</span>
             <span className="text-muted">{r.label}</span>
           </div>
         ))}
@@ -52,6 +52,24 @@ export function Legend({ items, className }: { items: { label: string; color: st
   )
 }
 
+/** etiqueta con el valor actual pegada al eje derecho (fey, uniswap) */
+function AxisValueTag({ viewBox, value }: { viewBox?: { x: number; y: number; width: number }; value: number }) {
+  if (!viewBox) return null
+  const text = compact(value)
+  const w = text.length * 6.6 + 12
+  const x = viewBox.x + viewBox.width + 4
+  return (
+    <g>
+      {/* tapa los ticks del eje que caen debajo de la etiqueta */}
+      <rect x={x - 2} y={viewBox.y - 17} width={62} height={34} fill="var(--surface)" />
+      <rect x={x} y={viewBox.y - 9} width={w} height={18} rx={9} fill="var(--text)" />
+      <text x={x + w / 2} y={viewBox.y + 3.5} textAnchor="middle" fontSize={11} fontFamily="var(--font-mono)" fill="var(--bg)">
+        {text}
+      </text>
+    </g>
+  )
+}
+
 /** evolución del capital: real sólido, estimado punteado (con banda opcional) */
 const MONTHS = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic']
 const fmtLabel = (mode: 'day' | 'month' | 'raw') => (l: string) =>
@@ -61,19 +79,20 @@ export function CapitalChart({ data, height = 220, labels = 'raw' }: { data: { l
   const labelFormat = fmtLabel(labels)
   const hasEst = data.some((d) => d.est !== null && d.est !== undefined)
   const rows = data.map((d) => ({ ...d, band: d.low !== null && d.low !== undefined && d.high !== null && d.high !== undefined ? [d.low, d.high] : null }))
+  const lastReal = [...data].reverse().find((d) => d.real !== null)?.real ?? null
   return (
     <div style={{ height }} role="img" aria-label="Evolución del capital">
       <ResponsiveContainer width="100%" height="100%">
-        <ComposedChart data={rows} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
+        <ComposedChart data={rows} margin={{ top: 12, right: 0, bottom: 0, left: 0 }}>
           <defs>
             <linearGradient id="capFill" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="var(--chart-1)" stopOpacity={0.1} />
+              <stop offset="0%" stopColor="var(--chart-1)" stopOpacity={0.08} />
               <stop offset="100%" stopColor="var(--chart-1)" stopOpacity={0} />
             </linearGradient>
           </defs>
           <CartesianGrid vertical={false} stroke="var(--grid)" />
           <XAxis dataKey="label" {...AXIS} tickFormatter={labelFormat} minTickGap={16} />
-          <YAxis {...AXIS} width={64} tickFormatter={compact} domain={['auto', 'auto']} />
+          <YAxis {...AXIS} orientation="right" width={58} tickFormatter={compact} domain={['auto', 'auto']} />
           <Tooltip
             cursor={{ stroke: 'var(--axis)' }}
             content={({ active, payload, label }) =>
@@ -88,8 +107,9 @@ export function CapitalChart({ data, height = 220, labels = 'raw' }: { data: { l
               ) : null
             }
           />
+          {lastReal !== null && <ReferenceLine y={lastReal} stroke="var(--axis)" strokeDasharray="2 4" label={(p: { viewBox?: { x: number; y: number; width: number } }) => <AxisValueTag viewBox={p.viewBox} value={lastReal} />} />}
           {rows.some((r) => r.band) && <Area dataKey="band" stroke="none" fill="var(--chart-1)" fillOpacity={0.08} isAnimationActive={false} />}
-          <Area type="monotone" dataKey="real" stroke="var(--chart-1)" strokeWidth={2} fill="url(#capFill)" connectNulls={false} dot={false} activeDot={{ r: 4, stroke: 'var(--surface)', strokeWidth: 2 }} />
+          <Area type="monotone" dataKey="real" stroke="var(--chart-1)" strokeWidth={1.75} fill="url(#capFill)" connectNulls={false} dot={false} activeDot={{ r: 4, stroke: 'var(--surface)', strokeWidth: 2 }} />
           {hasEst && <Line type="monotone" dataKey="est" stroke="var(--chart-1)" strokeWidth={2} strokeDasharray="5 4" strokeOpacity={0.7} dot={false} activeDot={{ r: 4, stroke: 'var(--surface)', strokeWidth: 2 }} connectNulls />}
         </ComposedChart>
       </ResponsiveContainer>
@@ -113,7 +133,7 @@ export function FlowBars({ data, height = 240 }: { data: { label: string; income
           <BarChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: 0 }} barGap={2} barCategoryGap="28%">
             <CartesianGrid vertical={false} stroke="var(--grid)" />
             <XAxis dataKey="label" {...AXIS} minTickGap={8} />
-            <YAxis {...AXIS} width={64} tickFormatter={compact} />
+            <YAxis {...AXIS} orientation="right" width={58} tickFormatter={compact} />
             <Tooltip
               cursor={{ fill: 'var(--surface-2)' }}
               content={({ active, payload, label }) =>
@@ -146,7 +166,7 @@ export function SingleBars({ data, height = 200, name, color = 'var(--chart-1)',
         <BarChart data={data} margin={{ top: 12, right: 8, bottom: 0, left: 0 }}>
           <CartesianGrid vertical={false} stroke="var(--grid)" />
           <XAxis dataKey="label" {...AXIS} minTickGap={6} />
-          <YAxis {...AXIS} width={64} tickFormatter={compact} />
+          <YAxis {...AXIS} orientation="right" width={58} tickFormatter={compact} />
           <ReferenceLine y={0} stroke="var(--axis)" />
           {refLine !== undefined && <ReferenceLine y={refLine} stroke="var(--text-2)" strokeDasharray="4 3" label={{ value: refLabel, position: 'insideBottomLeft', fill: 'var(--muted)', fontSize: 11, dy: -2 }} />}
           <Tooltip cursor={{ fill: 'var(--surface-2)' }} content={({ active, payload, label }) => (active && payload?.length ? <TooltipBox title={String(label)} rows={[{ label: name.toLowerCase(), value: payload[0].payload.value, color }]} /> : null)} />
@@ -184,7 +204,7 @@ export function SimulatorChart({ data, height = 260 }: { data: { label: string; 
           <ComposedChart data={rows} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
             <CartesianGrid vertical={false} stroke="var(--grid)" />
             <XAxis dataKey="label" {...AXIS} minTickGap={20} />
-            <YAxis {...AXIS} width={64} tickFormatter={compact} />
+            <YAxis {...AXIS} orientation="right" width={58} tickFormatter={compact} />
             <Tooltip
               cursor={{ stroke: 'var(--axis)' }}
               content={({ active, payload, label }) =>
@@ -263,7 +283,7 @@ export function StackedBars({ data, series, height = 220 }: { data: { label: str
           <BarChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
             <CartesianGrid vertical={false} stroke="var(--grid)" />
             <XAxis dataKey="label" {...AXIS} minTickGap={6} />
-            <YAxis {...AXIS} width={64} tickFormatter={compact} />
+            <YAxis {...AXIS} orientation="right" width={58} tickFormatter={compact} />
             <Tooltip
               cursor={{ fill: 'var(--surface-2)' }}
               content={({ active, payload, label }) =>

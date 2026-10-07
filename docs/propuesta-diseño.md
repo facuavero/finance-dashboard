@@ -2,7 +2,7 @@
 
 caudal = flujo y también capital. la app responde 4 preguntas en cada pantalla: qué pasó, por qué pasó, qué puede pasar y qué conviene hacer ahora.
 
-base: [referencias-diseño-finanzas-personales.md](./referencias-diseño-finanzas-personales.md). nada de esto sale de memoria. cada decisión cita la referencia que la origina.
+base: [referencias-diseño-finanzas-personales.md](./referencias-diseño-finanzas-personales.md) (v1) y [referencias-diseño-caudal-v3.md](./referencias-diseño-caudal-v3.md) (v3, sistema visual y navegación actuales). nada de esto sale de memoria. cada decisión cita la referencia que la origina.
 
 ---
 
@@ -15,80 +15,63 @@ base: [referencias-diseño-finanzas-personales.md](./referencias-diseño-finanza
 5. **cada estado vacío enseña y tiene salida.** ícono, qué va a aparecer ahí, una acción (quicken, midday).
 6. **permisos a la vista.** scopes literales de google, qué se guarda, qué se manda a la ia, cómo borrarlo (midday settings).
 
-## 2. sistema visual
+## 2. sistema visual (v3)
+
+**v3 (2026-10): terminal financiera oscura.** reemplaza el sidebar claro de la v1 y la paleta gris de la v2. otro layout, otra navegación, otra tipografía, otra forma. paleta pedida: grises, blancos, negros y un acento rojo adiamantado.
+
+### tema
+- **oscuro por defecto** (fey, coinbase, cosmos). casi negro, cards apenas más claras, bordes casi invisibles. el claro sigue disponible con el botón de tema y se recuerda.
+- **brillo rubí**: un resplandor rojo muy suave baja desde arriba de cada pantalla (uniswap) y aparece detrás del login y del input de la ia (fey, chronicle). es lo "adiamantado": un destello, no una pintura.
 
 ### color
-
-**v2 (2026-10): grises, blanco, negro y un solo color, rojo rubí.** reemplaza la base cálida con acento azul de la v1.
-
-el rojo marca dos cosas y nada más:
-1. **interacción**: ítem activo, links, switches, checkboxes, sliders, logo. el foco no: va en tinta, porque un borde rojo en un input se lee como error.
-2. **atención**: excedido, anomalía, prioridad alta, lo que empeoró contra el período anterior.
-
-lo bueno no se pinta: va en tinta, con flecha o ícono y texto. así el rojo siempre significa "mirá acá".
-
-| token | light | dark | uso |
+| token | oscuro | claro | uso |
 |---|---|---|---|
-| `--bg` | `#f5f5f5` | `#0a0a0a` | plano de página |
-| `--surface` | `#ffffff` | `#141414` | cards, paneles |
-| `--surface-2` | `#f2f2f2` | `#1c1c1c` | hover, filas, pistas de barras |
-| `--surface-3` | `#e7e7e7` | `#262626` | pista de progreso, switch apagado |
-| `--border` | `#e4e4e4` | `#262626` | bordes 1px |
-| `--text` | `#0a0a0a` | `#f5f5f5` | texto primario, botón primario |
-| `--text-2` | `#404040` | `#c4c4c4` | secundario |
-| `--muted` | `#6b6b6b` | `#8c8c8c` | labels, ejes |
-| `--accent` | `#d0103a` | `#f2445f` | rojo rubí para texto y trazos (5,5:1 y 5,1:1) |
-| `--accent-solid` | `#d0103a` | `#d0103a` | rellenos rojos con texto blanco (5,5:1 en ambos modos) |
-| `--accent-soft` | `#fdedf0` | `#2a0e15` | fondo de atención suave |
-| `--positive` | = `--text` | = `--text` | bueno: tinta + flecha, sin color |
-| `--warning` | = `--accent` | = `--accent` | atención: rojo sobre fondo suave + ícono |
-| `--critical` | = `--accent` | = `--accent` | crítico: rojo pleno (`--accent-solid`) + ícono |
-| `--chart-1` | `#171717` | `#e5e5e5` | serie principal |
-| `--chart-2` | `#8c8c8c` | `#6e6e6e` | serie secundaria, "otros" (≥3:1 sobre la card) |
+| `--bg` | `#09090a` | `#f7f7f8` | plano de página |
+| `--surface` | `#111113` | `#ffffff` | cards |
+| `--surface-2` | `#18181b` | `#f2f2f4` | hover, pistas, inputs |
+| `--surface-3` | `#232327` | `#e7e7ea` | pista de progreso, switch apagado |
+| `--border` | `#1d1d21` | `#e6e6e9` | bordes 1px, casi invisibles en oscuro |
+| `--text` | `#f4f4f5` | `#0a0a0b` | texto primario |
+| `--text-2` | `#a1a1aa` | `#52525b` | secundario |
+| `--muted` | `#7c7c85` | `#6b6b74` | labels, ejes |
+| `--accent` | `#ff4d6d` | `#d0103a` | rubí para texto y trazos (≥4,5:1 en ambos) |
+| `--accent-solid` | `#e0123d` | `#d0103a` | rellenos rubí con texto blanco |
+| `--accent-soft` | `#2b0d14` | `#fdedf0` | fondo de atención suave |
+| `--glow` | rubí al 16% | rubí al 7% | resplandor de identidad |
 
-- **severidad por peso, no por tono**: gris (info, bueno) → rojo suave (atención, "cerca del límite") → rojo pleno (crítico, "excedido").
-- botón primario: tinta. el rojo no es el botón principal: si lo fuera, dejaría de significar "atención". el botón de borrar sí es rojo pleno.
-- gastos en tinta, no en rojo. gastar no es un error. un gasto se pinta de rojo solo si es una anomalía o pasó un límite.
-- contrastes chequeados con `contrast()` del validador de la skill dataviz: texto ≥ 4,5:1 en ambos modos.
+- el rubí pleno marca: botón "nuevo", tab activa (punto), lo que pide atención (excedido, anomalía, prioridad alta). nada más.
+- lo bueno va en tinta con flecha. sin verde.
+- severidad por intensidad: gris → rubí suave → rubí pleno.
+- botón primario: tinta invertida (blanco en oscuro, negro en claro), como el "enter" de cosmos.
 
-### tipografía
-- geist sans para todo. geist mono solo para labels de sección en mayúscula con tracking (origin) y atajos de teclado.
-- cifra protagonista: 40-48px, semibold, dígitos proporcionales.
-- tablas y columnas de montos: `tabular-nums`.
-- escala: 12 / 13 / 14 (base) / 16 / 20 / 24 / 32 / 44.
+### tipografía: tres voces
+- **instrument serif** para títulos de página, saludos y momentos (cosmos, origin, midday). siempre grande, nunca en la interfaz chica.
+- **geist sans** para toda la interfaz.
+- **geist mono** para cifras (montos protagonistas, columnas de montos) y labels de sección en mayúscula (midday).
+- escala: 12 / 13 / 14 (base) / 16 / 20 / 28 / 40 / 56. título de página en serif 40px (32px en mobile).
 
-### espaciado y forma
-- grilla de 4px. padding de card 20px (16px en mobile). gap entre cards 16px.
-- radio: 10px cards, 8px inputs y botones, pill para chips y selectores de período.
-- sombras casi nulas. separa el borde de 1px, no la sombra.
-- sin gradientes, sin glass. movimiento: 150-200ms ease-out en hover, paneles y toasts. respeta `prefers-reduced-motion`.
+### forma
+- **pill**: botones, inputs de búsqueda, tabs, chips, selectores de rango y badges redondeados al máximo (cosmos, gemini, revolut).
+- inputs altos (44px) con radio 12px.
+- cards con radio 18px, sin sombra. en oscuro la card se separa del fondo por luminosidad, no por borde.
+- grilla de 4px. padding de card 20-24px.
 
 ### gráficos
-- **escala de grises.** serie principal en tinta (`--chart-1`), secundaria en gris (`--chart-2`). dos series se distinguen por luminosidad, que funciona igual con cualquier tipo de daltonismo.
-- el rojo en un gráfico solo marca valores negativos (ej: ahorro negativo).
-- **las categorías no tienen color.** se leen por nombre e ícono. gasto por categoría = barras horizontales en tinta ordenadas por monto (el largo dice cuánto). evolución de categorías = small multiples, una mini serie por categoría con la misma escala.
-- mapa de calor del calendario: una sola tinta, más intenso = más gasto.
-- barras ≤ 24px de ancho, extremo redondeado 4px, 2px de separación.
-- líneas 2px. área con relleno al 6-10%.
-- grilla en hairline sólida. nunca doble eje.
-- tooltip con crosshair en líneas y por barra en columnas.
-- leyenda siempre con ≥ 2 series. etiqueta directa solo en el punto que importa.
+- **línea fina en tinta** (blanca en oscuro), relleno mínimo, valor actual en una etiqueta pegada al eje (fey, uniswap).
+- serie secundaria en gris. el rubí solo en valores negativos.
+- categorías sin color propio: se leen por nombre e ícono. gasto por categoría = barras horizontales en tinta. evolución de categorías = small multiples.
 - toda serie estimada: línea punteada + leyenda "estimado".
+- barras ≤ 24px, extremo redondeado 4px. grilla hairline. nunca doble eje.
 
-## 3. navegación
+## 3. navegación (v3)
 
-sidebar fija (desktop) agrupada:
+- **sin sidebar.** barra superior fija (gemini): logo, tabs pill para inicio · movimientos · presupuestos · objetivos, menú **análisis** (estadísticas, fugas, proyección, ia financiera) y menú **agenda** (calendario, alertas). a la derecha: búsqueda ⌘k, botón **nuevo** en rubí, privacidad, tema, campana y menú de cuenta (integraciones, privacidad, configuración, salir).
+- contenido centrado de 1200px máximo.
+- **mobile**: barra superior con logo y acciones, y un **dock flotante** abajo (fey) con inicio · movimientos · [+] · ia · más. "más" abre un sheet con todas las secciones.
+- atajos: `n` nuevo movimiento, `⌘k` buscar.
 
-- **general**: inicio · movimientos · presupuestos · objetivos
-- **análisis**: estadísticas · fugas de dinero · proyección · ia financiera
-- **agenda**: calendario · alertas
-- **cuenta**: integraciones · privacidad · configuración
-
-header: buscador y comandos (⌘k), modo privacidad (ocultar montos, origin), tema, campana de alertas, menú de usuario.
-
-mobile: bottom nav con inicio · movimientos · [+] · ia · más. "más" abre sheet con el resto.
-
-botón "nuevo" global (atajo `n`): movimiento, importar csv, conectar integración (midday).
+### inicio (v3)
+dos columnas como fey. izquierda: saludo en serif, capital en mono gigante, gráfico de línea fina con real y estimado, lista label/valor de los 4 kpis (revolut). derecha: feed de cards: resumen del mes en prosa con brillo, alertas, próximos gastos, objetivos. debajo, gasto por categoría.
 
 ## 4. pantallas
 

@@ -16,11 +16,11 @@ export function LoginForm({ next, notice, demo }: { next: string; notice: string
   const [demoPending, setDemoPending] = useState(false)
   return (
     <div>
-      <h1 className="text-2xl font-semibold tracking-[-0.02em]">Iniciar sesión</h1>
-      <p className="mt-1 text-sm text-muted">Entrá para ver cómo viene tu mes.</p>
+      <h1 className="display text-[44px]">Iniciar sesión</h1>
+      <p className="mt-2 text-[15px] text-fg-2">Entrá para ver cómo viene tu mes.</p>
 
       {notice && (
-        <p className="mt-5 flex items-center gap-2 rounded-lg bg-positive-soft px-3 py-2 text-[13px] text-positive" role="status">
+        <p className="mt-5 flex items-center gap-2 rounded-2xl bg-surface-2 px-4 py-3 text-[13px] text-fg" role="status">
           <CircleCheck className="size-4" aria-hidden /> {notice}
         </p>
       )}

@@ -11,12 +11,12 @@ export function AlertRow({ alert, compact, actions }: { alert: Alert; compact?: 
   const Icon = ICON[alert.severity]
   return (
     <div className={cn('flex gap-3', compact ? 'py-3' : 'py-4')}>
-      <span className={cn('flex size-8 shrink-0 items-center justify-center rounded-lg', TONE[alert.severity])}>
+      <span className={cn('flex size-9 shrink-0 items-center justify-center rounded-full', TONE[alert.severity])}>
         <Icon className="size-4" aria-hidden />
         <span className="sr-only">{LABEL[alert.severity]}</span>
       </span>
       <div className="min-w-0 flex-1">
-        <Link href={alert.href} className="group flex items-start gap-1 text-[14px] font-medium hover:underline">
+        <Link href={alert.href} className="group flex items-start gap-1 text-[14px] font-medium hover:text-accent">
           {alert.title}
           <ChevronRight className="mt-0.5 size-4 shrink-0 text-muted opacity-0 transition-opacity group-hover:opacity-100" aria-hidden />
         </Link>

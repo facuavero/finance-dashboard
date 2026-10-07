@@ -43,7 +43,7 @@ export default async function Fugas() {
       {ctx.hasData && (
         <Card className="mb-6 p-5">
           <p className="text-[13px] text-fg-2">Posibles fugas detectadas</p>
-          <p className="mt-1 text-[32px] leading-tight font-semibold tracking-[-0.02em]">
+          <p className="mt-1 text-[40px] leading-none font-medium">
             <Money cents={leakMonthly} />
             <span className="ml-1.5 text-[15px] font-normal text-muted">por mes</span>
           </p>
@@ -56,7 +56,7 @@ export default async function Fugas() {
       {/* microgastos */}
       <section id="microgastos" aria-labelledby="micro-title" className="scroll-mt-20">
         <SectionLabel>Microgastos</SectionLabel>
-        <h2 id="micro-title" className="mt-1 text-[20px] font-semibold tracking-[-0.02em]">
+        <h2 id="micro-title" className="mt-1 display text-[30px] sm:text-[34px]">
           Gastaste <Money cents={micro.thisMonth.totalCents} /> este mes en compras inferiores a {money(micro.thresholdCents)}.
         </h2>
         <p className="mt-1 text-[13px] text-muted">
@@ -83,7 +83,7 @@ export default async function Fugas() {
       <section id="recurrentes" aria-labelledby="rec-title" className="mt-10 scroll-mt-20">
         <SectionLabel>Gastos recurrentes y suscripciones</SectionLabel>
         <div className="mt-1 flex flex-wrap items-end justify-between gap-2">
-          <h2 id="rec-title" className="text-[20px] font-semibold tracking-[-0.02em]">
+          <h2 id="rec-title" className="display text-[30px] sm:text-[34px]">
             <Money cents={ctx.recurringTotals.monthlyCents} /> por mes en {ctx.recurringTotals.count} pagos recurrentes
           </h2>
           <p className="text-[13px] text-muted">
@@ -150,7 +150,7 @@ export default async function Fugas() {
       {/* anomalías */}
       <section id="anomalias" aria-labelledby="anom-title" className="mt-10 scroll-mt-20">
         <SectionLabel>Anomalías</SectionLabel>
-        <h2 id="anom-title" className="mt-1 text-[20px] font-semibold tracking-[-0.02em]">
+        <h2 id="anom-title" className="mt-1 display text-[30px] sm:text-[34px]">
           {growth.length || unusual.length ? 'Gastos fuera de tu comportamiento habitual' : 'Sin anomalías este mes'}
         </h2>
         <p className="mt-1 text-[13px] text-muted">Cada categoría se compara con el promedio de los últimos 3 meses al mismo día del mes. Así el día 15 no se compara medio mes contra meses completos.</p>
@@ -206,12 +206,12 @@ export default async function Fugas() {
 
 function MiniStat({ label, value, estimated }: { label: string; value: React.ReactNode; estimated?: boolean }) {
   return (
-    <Card className="p-4">
-      <p className="flex items-center gap-1.5 text-[13px] text-fg-2">
+    <Card className="p-5">
+      <p className="label-caps flex items-center gap-1.5">
         {label}
         {estimated && <span className="rounded-full border border-dashed border-border-strong px-1.5 text-[10px] text-muted">estimado</span>}
       </p>
-      <p className="mt-1 text-[20px] font-semibold tracking-[-0.02em]">{value}</p>
+      <p className="mt-3 font-mono text-[24px] leading-none font-medium tracking-[-0.045em]">{value}</p>
     </Card>
   )
 }

@@ -21,7 +21,7 @@ export function CategoryIcon({ icon, className }: { icon: string; className?: st
 /** ícono de categoría en chip. la categoría se identifica por nombre e ícono, no por color */
 export function CategoryBadge({ icon, className }: { icon: string; className?: string }) {
   return (
-    <span className={cn('inline-flex size-8 shrink-0 items-center justify-center rounded-lg bg-surface-2 text-fg-2', className)}>
+    <span className={cn('inline-flex size-8 shrink-0 items-center justify-center rounded-2xl bg-surface-2 text-fg-2', className)}>
       <CategoryIcon icon={icon} />
     </span>
   )

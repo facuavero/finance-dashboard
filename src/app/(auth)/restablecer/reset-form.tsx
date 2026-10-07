@@ -14,8 +14,8 @@ export function ResetForm({ token }: { token: string }) {
   const { err, onChange } = useFormErrors(state.errors)
   return (
     <div>
-      <h1 className="text-2xl font-semibold tracking-[-0.02em]">Nueva contraseña</h1>
-      <p className="mt-1 text-sm text-muted">Al guardarla se cierran todas tus sesiones abiertas.</p>
+      <h1 className="display text-[44px]">Nueva contraseña</h1>
+      <p className="mt-2 text-[15px] text-fg-2">Al guardarla se cierran todas tus sesiones abiertas.</p>
       {state.message && (
         <FormAlert className="mt-5">
           {state.message}{' '}

@@ -192,12 +192,35 @@ export function TransactionsView({ rows, categories, today, initialQuery, openIm
             <Button variant="secondary" onClick={() => setImportOpen(true)}>
               <Upload /> Importar
             </Button>
-            <Button onClick={() => quick.open()}>
+            <Button variant="accent" onClick={() => quick.open()}>
               <Plus /> Nuevo
             </Button>
           </>
         }
       />
+
+      {/* resumen del filtro arriba de la tabla (mercury): neto, entró, salió */}
+      <section aria-label="Resumen del filtro" aria-live="polite" className="mb-6 grid grid-cols-2 gap-px overflow-hidden rounded-card border border-border bg-border sm:grid-cols-[1.4fr_1fr_1fr]">
+        <div className="col-span-2 bg-surface px-5 py-5 sm:col-span-1 sm:px-6">
+          <p className="label-caps">Neto · {RANGE_LABEL[f.range].toLowerCase()}</p>
+          <p className="mt-3 text-[36px] leading-none font-medium">
+            <Money cents={totals.inc - totals.exp} sign />
+          </p>
+          <p className="mt-2 text-[13px] text-muted">{plural(filtered.length, 'movimiento', 'movimientos')}</p>
+        </div>
+        <div className="bg-surface px-5 py-4 sm:px-6 sm:py-5">
+          <p className="label-caps">Entró</p>
+          <p className="mt-3 text-[22px] leading-none font-medium">
+            <Money cents={totals.inc} />
+          </p>
+        </div>
+        <div className="bg-surface px-5 py-4 sm:px-6 sm:py-5">
+          <p className="label-caps">Salió</p>
+          <p className="mt-3 text-[22px] leading-none font-medium">
+            <Money cents={totals.exp} />
+          </p>
+        </div>
+      </section>
 
       {/* filtros: una fila arriba de todo lo que afectan */}
       <div className="flex flex-col gap-2 lg:flex-row lg:items-center">
@@ -253,23 +276,7 @@ export function TransactionsView({ rows, categories, today, initialQuery, openIm
         </div>
       )}
 
-      {/* total del filtro siempre visible (patrón midday) */}
-      <p className="mt-4 mb-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-[13px] text-muted" aria-live="polite">
-        <span>
-          <span className="font-medium text-fg">{plural(filtered.length, 'movimiento', 'movimientos')}</span> · {RANGE_LABEL[f.range].toLowerCase()}
-        </span>
-        <span>
-          Ingresos <Money cents={totals.inc} className="font-medium text-positive" />
-        </span>
-        <span>
-          Gastos <Money cents={totals.exp} className="font-medium text-fg" />
-        </span>
-        <span>
-          Neto <Money cents={totals.inc - totals.exp} sign className="font-medium text-fg" />
-        </span>
-      </p>
-
-      <Card className="overflow-hidden">
+      <Card className="mt-4 overflow-hidden">
         {filtered.length === 0 ? (
           <EmptyState icon={SearchX} title="Sin resultados" action={<Button variant="secondary" size="sm" onClick={clearAll}>Limpiar filtros</Button>}>
             Probá con otra búsqueda o ajustá los filtros.
@@ -285,9 +292,9 @@ export function TransactionsView({ rows, categories, today, initialQuery, openIm
               <col className="hidden w-[15%] md:table-column" />
               <col className="w-32 md:w-36" />
             </colgroup>
-            <thead className="hidden border-b border-border bg-surface-2/60 text-left text-[12px] text-muted md:table-header-group">
+            <thead className="hidden border-b border-border text-left font-mono text-[11px] tracking-[0.06em] text-muted uppercase md:table-header-group">
               <tr>
-                <th className="w-10 py-2 pl-4">
+                <th className="w-10 py-3 pl-5">
                   <input type="checkbox" aria-label="Seleccionar todos los visibles" checked={allVisibleSelected} onChange={() => setSelected(allVisibleSelected ? new Set() : new Set(visible.map((r) => r.id)))} className="size-4 accent-[var(--accent)]" />
                 </th>
                 {!byDay && <th className="py-2 font-medium">Fecha</th>}
@@ -304,30 +311,36 @@ export function TransactionsView({ rows, categories, today, initialQuery, openIm
             {groups.map((g) => (
               <tbody key={g.date} className="border-b border-border last:border-0">
                 {byDay && (
-                  <tr className="bg-surface-2/60">
-                    <th colSpan={4} scope="rowgroup" className="py-1.5 pl-4 text-left text-[12px] font-medium text-fg-2 first-letter:uppercase">
+                  <tr>
+                    <th colSpan={4} scope="rowgroup" className="pt-4 pb-1.5 pl-5 text-left text-[12px] font-medium text-muted first-letter:uppercase">
                       {dateLong(g.date, g.date.slice(0, 4) !== today.slice(0, 4))}
                     </th>
-                    <td className="py-1.5 pr-5 text-right text-[12px] whitespace-nowrap text-muted">
+                    <td className="pt-4 pb-1.5 pr-5 text-right text-[12px] whitespace-nowrap text-muted">
                       <Money cents={g.net} sign tabular />
                     </td>
                   </tr>
                 )}
                 {g.rows.map((r) => (
-                  <tr key={r.id} className={cn('group cursor-pointer border-t border-border/60 hover:bg-surface-2/70', selected.has(r.id) && 'bg-accent-soft/60')} onClick={() => setEditing(r)}>
-                    <td className="w-10 py-2.5 pl-4 align-middle" onClick={(e) => e.stopPropagation()}>
+                  <tr key={r.id} className={cn('group cursor-pointer hover:bg-surface-2', selected.has(r.id) && 'bg-accent-soft/60')} onClick={() => setEditing(r)}>
+                    <td className="w-10 py-3 pl-5 align-middle" onClick={(e) => e.stopPropagation()}>
                       <input type="checkbox" aria-label={`Seleccionar ${r.description || r.categoryName}`} checked={selected.has(r.id)} onChange={() => toggle(r.id)} className="size-4 accent-[var(--accent)]" />
                     </td>
-                    {!byDay && <td className="num py-2.5 whitespace-nowrap text-fg-2">{r.date.split('-').reverse().slice(0, 2).join('/')}</td>}
-                    <td className="max-w-[58vw] py-2.5 pr-3 md:max-w-0">
-                      <button className="block w-full truncate text-left font-medium text-fg" onClick={() => setEditing(r)}>
-                        {r.description || r.categoryName}
-                      </button>
-                      <span className="mt-0.5 flex flex-wrap items-center gap-1 md:hidden">
+                    {!byDay && <td className="py-3 font-mono whitespace-nowrap text-fg-2">{r.date.split('-').reverse().slice(0, 2).join('/')}</td>}
+                    <td className="max-w-[58vw] py-3 pr-3 md:max-w-0">
+                      {/* avatar con el ícono de la categoría (mercury) */}
+                      <span className="flex items-center gap-3">
+                        <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-surface-3 text-fg-2">
+                          <CategoryIcon icon={r.categoryIcon} className="size-3.5" />
+                        </span>
+                        <button className="block min-w-0 flex-1 truncate text-left font-medium text-fg" onClick={() => setEditing(r)}>
+                          {r.description || r.categoryName}
+                        </button>
+                      </span>
+                      <span className="mt-0.5 flex flex-wrap items-center gap-1 pl-11 md:hidden">
                         <span className="text-[12px] text-muted">{r.categoryName}</span>
                       </span>
                       {(r.detectedRecurring || r.tags.length > 0) && (
-                        <span className="mt-1 hidden flex-wrap gap-1 md:flex">
+                        <span className="mt-1 hidden flex-wrap gap-1 pl-11 md:flex">
                           {r.detectedRecurring && (
                             <Badge tone="neutral">
                               <Repeat /> recurrente
@@ -341,14 +354,13 @@ export function TransactionsView({ rows, categories, today, initialQuery, openIm
                         </span>
                       )}
                     </td>
-                    <td className="hidden py-2.5 pr-3 md:table-cell">
+                    <td className="hidden py-3 pr-3 text-fg-2 md:table-cell">
                       <span className="inline-flex items-center gap-2">
-                        <CategoryIcon icon={r.categoryIcon} className="size-3.5 text-muted" />
                         <span className="truncate">{r.subcategoryName ? `${r.categoryName} · ${r.subcategoryName}` : r.categoryName}</span>
                       </span>
                     </td>
-                    <td className="hidden py-2.5 pr-3 text-fg-2 md:table-cell">{PAYMENT_METHODS.find((p) => p.value === r.paymentMethod)?.label ?? r.paymentMethod}</td>
-                    <td className={cn('py-2.5 pr-5 text-right font-medium whitespace-nowrap', r.type === 'income' && 'text-positive')}>
+                    <td className="hidden py-3 pr-3 text-muted md:table-cell">{PAYMENT_METHODS.find((p) => p.value === r.paymentMethod)?.label ?? r.paymentMethod}</td>
+                    <td className={cn('py-3 pr-5 text-right text-[14px] font-medium whitespace-nowrap', r.type === 'income' && 'text-positive')}>
                       <Money cents={r.type === 'income' ? r.amountCents : -r.amountCents} sign={r.type === 'income'} tabular />
                     </td>
                   </tr>
@@ -369,7 +381,7 @@ export function TransactionsView({ rows, categories, today, initialQuery, openIm
 
       {/* acciones masivas */}
       {selected.size > 0 && (
-        <div className="fixed inset-x-4 bottom-20 z-30 mx-auto flex max-w-md items-center gap-3 rounded-xl border border-border bg-surface px-4 py-3 shadow-xl animate-slide-up lg:bottom-6">
+        <div className="fixed inset-x-4 bottom-24 z-30 mx-auto flex max-w-md items-center gap-3 rounded-full border border-border-strong bg-surface-2 py-2 pr-2 pl-5 shadow-2xl animate-slide-up lg:bottom-6">
           <span className="text-sm font-medium">{plural(selected.size, 'seleccionado', 'seleccionados')}</span>
           <span className="money text-[13px] text-muted">{money(rows.filter((r) => selected.has(r.id)).reduce((a, r) => a + (r.type === 'income' ? r.amountCents : -r.amountCents), 0), { sign: true })}</span>
           <div className="ml-auto flex gap-1">
