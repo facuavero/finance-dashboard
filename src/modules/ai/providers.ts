@@ -4,7 +4,7 @@ export type Engine = { id: 'gemini' | 'groq'; model: string; label: string }
 
 export function availableEngine(): Engine | null {
   if (process.env.GEMINI_API_KEY) return { id: 'gemini', model: process.env.GEMINI_MODEL || 'gemini-2.5-flash', label: 'Gemini' }
-  if (process.env.GROQ_API_KEY) return { id: 'groq', model: process.env.GROQ_MODEL || 'llama-3.3-70b-versatile', label: 'Groq' }
+  if (process.env.GROQ_API_KEY) return { id: 'groq', model: process.env.GROQ_MODEL || 'openai/gpt-oss-120b', label: 'Groq' }
   return null
 }
 
@@ -44,6 +44,8 @@ async function gemini(e: Engine, m: Msg): Promise<string> {
 }
 
 async function groq(e: Engine, m: Msg): Promise<string> {
+  // gpt-oss razona antes de responder y esos tokens cuentan en max_tokens: esfuerzo bajo y margen extra
+  const reasoning = e.model.startsWith('openai/gpt-oss')
   const res = await withTimeout(
     (signal) =>
       fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -53,7 +55,8 @@ async function groq(e: Engine, m: Msg): Promise<string> {
         body: JSON.stringify({
           model: e.model,
           temperature: 0.3,
-          max_tokens: m.maxTokens ?? 4096,
+          max_tokens: (m.maxTokens ?? 4096) + (reasoning ? 1024 : 0),
+          ...(reasoning ? { reasoning_effort: 'low' } : {}),
           messages: [
             { role: 'system', content: m.system },
             { role: 'user', content: m.user },
