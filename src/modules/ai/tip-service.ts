@@ -41,7 +41,7 @@ export async function generateTip(opts: { userId: string; currency: string; ctx:
   const pool = applicablePrompts(has(ctx))
   const rand = opts.rand ?? Math.random
   const chosen = (pool.length ? pool : TIP_PROMPTS)[Math.floor(rand() * (pool.length || TIP_PROMPTS.length))]
-  const payload = aiPayload(ctx, opts.recs, opts.combined, opts.currency)
+  const payload = aiPayload(ctx, opts.recs, opts.combined)
   const key = `${opts.userId}|${ctx.today}|${TIP_PROMPTS.indexOf(chosen)}|${Math.round(ctx.balanceCents / 100)}|${Math.round(ctx.month.expenseCents / 100)}`
   const hit = cache.get(key)
   if (hit) return hit

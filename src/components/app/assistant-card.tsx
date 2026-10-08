@@ -32,7 +32,7 @@ type Row = { key: string; group: 'ca' | 'tx' | 'bu' | 'go'; title: string; detai
  */
 export function AssistantCard({ categories, force, embedded }: { categories: Cat[]; force?: boolean; embedded?: boolean }) {
   const router = useRouter()
-  const [visible, setVisible] = useState(false)
+  const [visible, setVisible] = useState(!!embedded)
   const [text, setText] = useState('')
   const [fileName, setFileName] = useState('')
   const [proposal, setProposal] = useState<Proposal | null>(null)

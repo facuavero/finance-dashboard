@@ -4,6 +4,8 @@ const nextConfig: NextConfig = {
   // pglite trae wasm propio. se carga desde node_modules en runtime, sin bundlear.
   serverExternalPackages: ['@electric-sql/pglite'],
   poweredByHeader: false,
+  // solo se empaquetan los íconos y gráficos que se usan
+  experimental: { optimizePackageImports: ['lucide-react', 'recharts'] },
   async headers() {
     return [
       {

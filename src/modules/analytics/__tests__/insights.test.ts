@@ -141,3 +141,16 @@ describe('moneda en la carga con IA', () => {
     expect(plan.transactions[0].amountCents).toBe(50_000_00)
   })
 })
+
+import { money, setClientFormat, toBaseCents, amountText } from '@/lib/format'
+
+describe('moneda de visualización', () => {
+  it('convierte al mostrar y al escribir', () => {
+    setClientFormat({ currency: 'USD', decimals: false, rate: 0.001 })
+    expect(money(1_000_000_00)).toBe('US$1.000')
+    expect(toBaseCents(1_000_00)).toBe(1_000_000_00)
+    expect(amountText(1_000_000_00)).toBe('1000')
+    setClientFormat({ currency: 'ARS', decimals: false, rate: 1 })
+    expect(money(42_000_00)).toBe('$42.000')
+  })
+})

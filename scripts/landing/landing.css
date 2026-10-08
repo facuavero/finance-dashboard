@@ -1,0 +1,316 @@
+@import 'tailwindcss' source(none);
+@source '../../public/landing/index.html';
+
+
+@font-face { font-family: 'Geist'; src: url('/fonts/Geist-Variable.woff2') format('woff2'); font-weight: 100 900; font-display: swap; }
+@font-face { font-family: 'Instrument Serif'; src: url('/fonts/instrument-serif-latin-400-normal.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Instrument Serif'; src: url('/fonts/instrument-serif-latin-400-italic.woff2') format('woff2'); font-weight: 400; font-style: italic; font-display: swap; }
+@font-face { font-family: 'Inter'; src: url('/fonts/inter-latin-wght-normal.woff2') format('woff2'); font-weight: 100 900; font-display: swap; }
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/*
+  tokens v3: ver docs/propuesta-diseño.md y docs/referencias-diseño-caudal-v3.md.
+  terminal financiera oscura (oscuro por defecto). grises, blanco, negro y un solo color: rubí.
+  el rubí marca el botón nuevo, lo activo y lo que pide atención. lo bueno va en tinta con flecha.
+  el foco va en tinta: un borde rojo en un input se lee como error.
+  --glow es el brillo adiamantado de arriba de la página y detrás de los momentos clave.
+*/
+:root {
+  --font-geist-sans: 'Geist';
+  --font-geist-mono: 'Geist Mono';
+  --font-serif-display: 'Instrument Serif';
+  --font-figure-face: 'Inter';
+  --bg: #f7f7f8;
+  --surface: #ffffff;
+  --surface-2: #f2f2f4;
+  --surface-3: #e7e7ea;
+  --border: #e6e6e9;
+  --border-strong: #d4d4d8;
+  --text: #0a0a0b;
+  --text-2: #52525b;
+  --muted: #6b6b74;
+  --accent: #d0103a;
+  --accent-solid: #d0103a;
+  --accent-strong: #a80c2f;
+  --accent-soft: #fdedf0;
+  --on-accent: #ffffff;
+  --glow: rgb(208 16 58 / 0.07);
+  --glow-strong: rgb(208 16 58 / 0.16);
+  /* estados: bueno = tinta, atención = rubí suave, crítico = rubí pleno */
+  --positive: #0a0a0b;
+  --positive-soft: #f2f2f4;
+  --warning: #d0103a;
+  --warning-mark: #ec7189;
+  --warning-soft: #fdedf0;
+  --critical: #d0103a;
+  --critical-soft: #fce6ea;
+  --ring: #0a0a0b;
+  /* datos: serie principal en tinta, secundaria en gris */
+  --chart-1: #0a0a0b;
+  --chart-2: #8b8b94;
+  --chart-3: #d4d4d8;
+  --grid: #ececef;
+  --axis: #c4c4ca;
+  color-scheme: light;
+}
+
+.dark {
+  --bg: #09090a;
+  --surface: #111113;
+  --surface-2: #18181b;
+  --surface-3: #232327;
+  --border: #1d1d21;
+  --border-strong: #2e2e33;
+  --text: #f4f4f5;
+  --text-2: #a1a1aa;
+  --muted: #7c7c85;
+  --accent: #ff4d6d;
+  --accent-solid: #e0123d;
+  --accent-strong: #ff6d88;
+  --accent-soft: #2b0d14;
+  --on-accent: #ffffff;
+  --glow: rgb(224 18 61 / 0.16);
+  --glow-strong: rgb(224 18 61 / 0.32);
+  --positive: #f4f4f5;
+  --positive-soft: #18181b;
+  --warning: #ff4d6d;
+  --warning-mark: #b0304a;
+  --warning-soft: #2b0d14;
+  --critical: #ff4d6d;
+  --critical-soft: #3a111b;
+  --ring: #f4f4f5;
+  --chart-1: #f4f4f5;
+  --chart-2: #6e6e77;
+  --chart-3: #2e2e33;
+  --grid: #1a1a1e;
+  --axis: #34343a;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-fg: var(--text);
+  --color-fg-2: var(--text-2);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-solid: var(--accent-solid);
+  --color-accent-strong: var(--accent-strong);
+  --color-accent-soft: var(--accent-soft);
+  --color-on-accent: var(--on-accent);
+  --color-positive: var(--positive);
+  --color-positive-soft: var(--positive-soft);
+  --color-warning: var(--warning);
+  --color-warning-mark: var(--warning-mark);
+  --color-warning-soft: var(--warning-soft);
+  --color-critical: var(--critical);
+  --color-critical-soft: var(--critical-soft);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --font-figure: var(--font-figure-face), var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-serif-display), ui-serif, Georgia, serif;
+  --radius-card: 18px;
+  --animate-in: fade-in 160ms ease-out;
+  --animate-slide-up: slide-up 200ms ease-out;
+  --animate-slide-left: slide-left 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  --animate-wiggle: wiggle 900ms ease-in-out 400ms 1;
+  --animate-pop-in: pop-in 260ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-rise: rise 800ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes gem-turn {
+  to { transform: translateX(-100%); }
+}
+@keyframes wiggle {
+  0%, 100% { transform: rotate(0); }
+  20% { transform: rotate(-14deg) scale(1.1); }
+  40% { transform: rotate(10deg) scale(1.1); }
+  60% { transform: rotate(-6deg); }
+  80% { transform: rotate(3deg); }
+}
+@keyframes grow-x {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+@keyframes pop-in {
+  from { opacity: 0; transform: scale(0.94); }
+  to { opacity: 1; transform: scale(1); }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+@keyframes shine {
+  from { background-position: 200% 0; }
+  to { background-position: -200% 0; }
+}
+@keyframes rise {
+  from { opacity: 0; transform: translateY(18px); filter: blur(4px); }
+  to { opacity: 1; transform: translateY(0); filter: blur(0); }
+}
+@keyframes slide-left {
+  from { transform: translateX(24px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    /* brillo rubí arriba de la página (uniswap): lo adiamantado */
+    background: radial-gradient(1100px 480px at 50% -160px, var(--glow), transparent 72%) no-repeat, var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+  ::selection {
+    background: var(--accent-soft);
+  }
+}
+
+@layer utilities {
+  .num {
+    font-variant-numeric: tabular-nums;
+  }
+  /* cifras: Inter con numerales tabulares. no es mono, pero las columnas alinean */
+  .font-figure {
+    font-family: var(--font-figure);
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: 'tnum', 'ss01';
+  }
+  .label-caps {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  /* títulos y momentos en serif */
+  .display {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    letter-spacing: -0.01em;
+    line-height: 1.05;
+  }
+  /* cifras protagonistas en mono */
+  .figure {
+    font-family: var(--font-figure);
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: 'tnum', 'ss01';
+    letter-spacing: -0.025em;
+    font-weight: 500;
+  }
+  /* brillo detrás de un bloque clave (login, input de ia) */
+  .glow-ring {
+    box-shadow: 0 0 0 1px var(--border-strong), 0 0 90px -24px var(--glow-strong);
+  }
+  /* modo privacidad: oculta montos marcados */
+  .money {
+    transition: filter 380ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .privacy .money {
+    filter: blur(7px);
+    user-select: none;
+  }
+  /* barras de progreso: crecen desde la izquierda al aparecer */
+  .bar-grow {
+    transform-origin: left center;
+    animation: grow-x 800ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  }
+  /* entrada de cada pantalla: los bloques suben de a uno */
+  .page-in > * > * {
+    animation: slide-up 420ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  }
+  .page-in > * > *:nth-child(1) { animation-delay: 0ms; }
+  .page-in > * > *:nth-child(2) { animation-delay: 70ms; }
+  .page-in > * > *:nth-child(3) { animation-delay: 140ms; }
+  .page-in > * > *:nth-child(4) { animation-delay: 210ms; }
+  .page-in > * > *:nth-child(5) { animation-delay: 280ms; }
+  .page-in > * > *:nth-child(n + 6) { animation-delay: 340ms; }
+  /* aparece al entrar en pantalla (landing). sin js se ve igual */
+  .reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 700ms cubic-bezier(0.2, 0.8, 0.2, 1), transform 700ms cubic-bezier(0.2, 0.8, 0.2, 1);
+    transition-delay: var(--reveal-delay, 0ms);
+  }
+  .reveal.in {
+    opacity: 1;
+    transform: none;
+  }
+  .no-js .reveal {
+    opacity: 1;
+    transform: none;
+  }
+  /* texto con brillo que recorre (titulares destacados) */
+  .shine-text {
+    background: linear-gradient(110deg, currentColor 40%, var(--accent) 50%, currentColor 60%) 200% 0 / 200% 100% no-repeat;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: shine 5s linear infinite;
+  }
+  /* diamante horneado: una tira de 24 cuadros que avanza de a uno. solo transform, no repinta */
+  .gem {
+    position: relative;
+    display: block;
+    width: 100%;
+    aspect-ratio: 92 / 57;
+    overflow: hidden;
+  }
+  .gem-strip {
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 2400%;
+    background: url('/gem-sprite.webp') 0 0 / 100% 100% no-repeat;
+    animation: gem-turn 3.6s steps(24) infinite;
+    will-change: transform;
+  }
+  .scrollbar-thin {
+    scrollbar-width: thin;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gem-strip {
+    animation: none;
+  }
+  .reveal {
+    opacity: 1;
+    transform: none;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

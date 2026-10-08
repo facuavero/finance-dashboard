@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from 'next'
 import { GeistSans } from 'geist/font/sans'
-import { GeistMono } from 'geist/font/mono'
 import localFont from 'next/font/local'
 import Script from 'next/script'
 import { Toaster } from 'sonner'
@@ -41,7 +40,7 @@ const bootScript = `(function(){var e=document.documentElement;try{var l=localSt
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es-AR" className={`dark ${GeistSans.variable} ${GeistMono.variable} ${serif.variable} ${figure.variable}`} suppressHydrationWarning>
+    <html lang="es-AR" className={`dark ${GeistSans.variable} ${serif.variable} ${figure.variable}`} suppressHydrationWarning>
       <body>
         <Script id="caudal-boot" strategy="beforeInteractive">
           {bootScript}

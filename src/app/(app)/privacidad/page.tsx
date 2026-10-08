@@ -28,7 +28,7 @@ const ROWS: { data: string; why: string; where: string; remove: string }[] = [
 export default async function Privacidad() {
   const { user, ctx, recommendations, combined, integrations } = await getAppData()
   const engine = availableEngine()
-  const payload = aiPayload(ctx, recommendations, combined, user.currency)
+  const payload = aiPayload(ctx, recommendations, combined)
   const gmail = integrations.find((i) => i.provider === 'gmail')
   const gcal = integrations.find((i) => i.provider === 'gcal')
 

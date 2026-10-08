@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server'
 
 // filtro rápido: sin cookie de sesión no se entra a rutas privadas. la validación real ocurre en el servidor (requireUser).
-const PUBLIC = ['/login', '/registro', '/recuperar', '/restablecer']
+const PUBLIC = ['/login', '/registro', '/recuperar', '/restablecer', '/api/demo', '/landing', '/fonts']
 
 export function proxy(req: NextRequest) {
   const { pathname, search } = req.nextUrl
@@ -17,5 +17,5 @@ export function proxy(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!api/integrations/google/callback|_next/static|_next/image|favicon.ico|icon.svg|.*\\.(?:png|svg|jpg|webp|ico)$).*)'],
+  matcher: ['/((?!api/integrations/google/callback|_next/static|_next/image|favicon.ico|icon.svg|.*\\.(?:png|svg|jpg|webp|ico|css|js|woff2)$).*)'],
 }

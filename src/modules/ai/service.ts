@@ -22,7 +22,7 @@ export type AiReport = {
  * lo único que sale hacia la ia externa. sin nombre, email, descripciones completas ni contenido de correos.
  * se muestra tal cual en la pantalla de privacidad.
  */
-export function aiPayload(ctx: FinancialContext, recs: Recommendation[], combined: CombinedReport | null, _currency = 'ARS') {
+export function aiPayload(ctx: FinancialContext, recs: Recommendation[], combined: CombinedReport | null) {
   // los montos se guardan en pesos: al modelo le llegan en la moneda que la persona ve, así sus textos coinciden con la pantalla
   const k = currentFormat().rate / 100
   return {
@@ -105,7 +105,7 @@ export async function generateReport(
   if (!engine) return { ...base, note: 'Sin clave de IA configurada: las recomendaciones salen del motor de reglas local, con tus datos reales.' }
   if (!user.aiExternalEnabled) return { ...base, note: 'Desactivaste la IA externa en Privacidad. Todo se calcula en el servidor de Caudal.' }
 
-  const payload = aiPayload(ctx, recs, combined, user.currency)
+  const payload = aiPayload(ctx, recs, combined)
   const hash = createHash('sha256').update(`${PROMPT_VERSION}${JSON.stringify(payload)}`).digest('hex')
 
   if (!opts.force) {
@@ -179,7 +179,7 @@ export async function answerQuestion(user: { aiExternalEnabled: boolean; currenc
         system: `${SYSTEM}\nRespondé en 1 a 3 frases. Empezá con la respuesta directa a la pregunta, después, solo si hace falta, un dato o una acción. Si los datos no alcanzan para responder, decilo en una frase. Si es un saludo, saludá en una línea.`,
         json: false,
         maxTokens: 700,
-        user: `${TOPIC_HINT[topic] ? `${TOPIC_HINT[topic]}\n` : ''}Datos del usuario (JSON):\n${JSON.stringify(aiPayload(ctx, recs, combined, user.currency))}\n\nPregunta: ${question.slice(0, 500)}`,
+        user: `${TOPIC_HINT[topic] ? `${TOPIC_HINT[topic]}\n` : ''}Datos del usuario (JSON):\n${JSON.stringify(aiPayload(ctx, recs, combined))}\n\nPregunta: ${question.slice(0, 500)}`,
       })
       return { answer: plain(text), engine: `${engine.label} · ${engine.model}` }
     } catch (err) {
