@@ -6,7 +6,9 @@ import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { DemoButton } from './demo-button'
 import { Features, Recommendation, SUGGESTED_QUESTIONS } from './features'
+import { HeroGem } from './hero-gem'
 import { ProductPreview } from './preview'
+import { Reveal } from './reveal'
 
 // landing pública. base: docs/propuesta-landing.md y docs/referencias-diseño-landing-caudal.md
 
@@ -73,11 +75,11 @@ const FAQ = [
 
 function SectionHead({ label, title, body, className }: { label: string; title: React.ReactNode; body?: React.ReactNode; className?: string }) {
   return (
-    <div className={cn('max-w-[640px]', className)}>
+    <Reveal className={cn('max-w-[640px]', className)}>
       <p className="label-caps">{label}</p>
       <h2 className="display mt-4 text-[40px] sm:text-[56px]">{title}</h2>
       {body && <p className="mt-4 text-[17px] text-fg-2">{body}</p>}
-    </div>
+    </Reveal>
   )
 }
 
@@ -100,7 +102,7 @@ function Ctas({ demo, className }: { demo: boolean; className?: string }) {
 
 export function Landing({ demo }: { demo: boolean }) {
   return (
-    <div className="min-h-dvh">
+    <div className="min-h-dvh overflow-x-clip">
       <a href="#contenido" className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:rounded-lg focus:bg-surface focus:px-3 focus:py-2">
         Saltar al contenido
       </a>
@@ -131,21 +133,23 @@ export function Landing({ demo }: { demo: boolean }) {
 
       <main id="contenido">
         {/* hero: titular + ctas, y el producto ocupa más pantalla que el texto (titan, midday) */}
-        <section className="mx-auto max-w-[1160px] px-4 pt-14 sm:px-6 sm:pt-24">
-          <p className="label-caps">Inteligencia financiera personal</p>
-          <h1 className="display mt-5 text-[52px] leading-[0.98] sm:text-[72px] md:text-[88px] lg:text-[104px]">
-            <span className="block">Dejá de anotar gastos.</span>
-            <span className="block text-muted italic">Empezá a entenderlos.</span>
+        <section className="relative mx-auto max-w-[1160px] px-4 pt-14 sm:px-6 sm:pt-24">
+          {/* el diamante vive arriba a la derecha, detrás del texto */}
+          <HeroGem className="absolute top-0 right-[-40px] hidden size-[300px] md:block lg:top-2 lg:right-[-86px] lg:size-[420px]" />
+          <p className="label-caps relative animate-rise">Inteligencia financiera personal</p>
+          <h1 className="display relative mt-5 text-[52px] leading-[0.98] sm:text-[72px] md:text-[88px] lg:text-[104px]">
+            <span className="block animate-rise [animation-delay:120ms]">Dejá de anotar gastos.</span>
+            <span className="block animate-rise text-muted italic [animation-delay:260ms]">Empezá a entenderlos.</span>
           </h1>
-          <div className="mt-6 grid gap-6 lg:mt-8 lg:grid-cols-2 lg:items-end lg:gap-16">
-            <p className="max-w-[560px] text-[17px] leading-relaxed text-fg-2">Caudal te dice qué pasó con tu plata, por qué pasó, qué puede pasar y qué conviene hacer ahora. Con tus números, no con promedios de internet.</p>
-            <div className="lg:justify-self-end">
+          <div className="relative mt-6 grid gap-6 lg:mt-8 lg:grid-cols-2 lg:items-end lg:gap-16">
+            <p className="max-w-[560px] animate-rise text-[17px] leading-relaxed text-fg-2 [animation-delay:420ms]">Caudal te dice qué pasó con tu plata, por qué pasó, qué puede pasar y qué conviene hacer ahora. Con tus números, no con promedios de internet.</p>
+            <div className="animate-rise lg:justify-self-end [animation-delay:540ms]">
               <Ctas demo={demo} />
               <p className="mt-3 text-[13px] text-muted">{demo ? 'Sin tarjeta y sin conectar el banco. La demo trae 6 meses de movimientos de ejemplo.' : 'Gratis. Sin tarjeta y sin conectar el banco.'}</p>
             </div>
           </div>
 
-          <figure className="mt-12 sm:mt-16">
+          <figure className="mt-12 animate-rise [animation-delay:700ms] sm:mt-16">
             <ProductPreview />
             <figcaption className="mt-3 text-center text-[12px] text-muted">El inicio de la cuenta demo. Lo estimado siempre dice estimado.</figcaption>
           </figure>
@@ -154,7 +158,7 @@ export function Landing({ demo }: { demo: boolean }) {
             {FACTS.map((f, i) => (
               <div key={f.label} className={cn('border-border py-5 pr-4', i % 2 === 1 && 'border-l pl-4 lg:pl-6', i >= 2 && 'border-t lg:border-t-0', i === 2 && 'lg:border-l lg:pl-6')}>
                 <dt className="label-caps">{f.label}</dt>
-                <dd className="mt-2 font-mono text-[20px] font-medium tracking-[-0.03em] sm:text-[26px]">{f.value}</dd>
+                <dd className="mt-2 font-figure text-[20px] font-medium tracking-[-0.02em] sm:text-[26px]">{f.value}</dd>
               </div>
             ))}
           </dl>
@@ -165,8 +169,9 @@ export function Landing({ demo }: { demo: boolean }) {
           <div className="mx-auto max-w-[1160px] px-4 py-16 sm:px-6 sm:py-24">
             <SectionHead label="Qué hace distinto" title={<span id="preguntas-clave">Cada pantalla responde cuatro preguntas.</span>} body="Un tracker te muestra en qué gastaste. Caudal sigue de largo." />
             <ol className="mt-10 grid gap-px overflow-hidden rounded-card border border-border bg-border sm:grid-cols-2 lg:grid-cols-4">
-              {QUESTIONS.map(({ n, icon: Icon, title, body, estimate }) => (
-                <li key={n} className="flex flex-col bg-surface p-5">
+              {QUESTIONS.map(({ n, icon: Icon, title, body, estimate }, qi) => (
+                <li key={n} className="bg-surface">
+                  <Reveal delay={qi * 90} className="flex h-full flex-col p-5">
                   <div className="flex items-center justify-between">
                     <span className="flex size-9 items-center justify-center rounded-full bg-surface-2">
                       <Icon className="size-4 text-fg-2" aria-hidden />
@@ -177,6 +182,7 @@ export function Landing({ demo }: { demo: boolean }) {
                     {title} {estimate && <EstimateTag />}
                   </h3>
                   <p className="mt-2 text-[14px] text-fg-2">{body}</p>
+                  </Reveal>
                 </li>
               ))}
             </ol>
@@ -186,9 +192,9 @@ export function Landing({ demo }: { demo: boolean }) {
         {/* funciones con fragmentos de ui (mercury, ramp) */}
         <section id="funciones" className="mx-auto max-w-[1160px] scroll-mt-16 px-4 py-16 sm:px-6 sm:py-24">
           <SectionHead label="Funciones" title="Hecho para usarse todos los días." body="Cargar te lleva segundos. Lo demás lo calcula Caudal." />
-          <div className="mt-10">
+          <Reveal className="mt-10">
             <Features />
-          </div>
+          </Reveal>
         </section>
 
         {/* ia: motor → explicación → vos (dovetail), con una recomendación real (hex) y preguntas sugeridas (midday) */}
@@ -236,6 +242,7 @@ export function Landing({ demo }: { demo: boolean }) {
           <ol className="mt-10 grid gap-4 md:grid-cols-3">
             {TIMELINE.map((t, i) => (
               <li key={t.when} className="relative">
+                <Reveal delay={i * 120}>
                 <div className="flex items-center gap-3">
                   <span className={cn('size-2.5 rounded-full border-2', i === 0 ? 'border-accent-solid bg-accent-solid' : 'border-border-strong bg-bg')} aria-hidden />
                   <span className="rounded-full border border-border-strong px-3 py-1 font-mono text-[11px] tracking-[0.04em] text-fg-2 uppercase">{t.when}</span>
@@ -252,6 +259,7 @@ export function Landing({ demo }: { demo: boolean }) {
                     ))}
                   </ul>
                 </div>
+                </Reveal>
               </li>
             ))}
           </ol>
@@ -263,14 +271,14 @@ export function Landing({ demo }: { demo: boolean }) {
           <div className="mx-auto max-w-[1160px] px-4 py-16 sm:px-6 sm:py-24">
             <SectionHead label="Privacidad" title="Tus datos, a la vista. Y tuyos." body="Qué se guarda, qué ve la IA y cómo borrarlo. Sin letra chica." />
             <div className="mt-10 grid gap-8 md:grid-cols-3">
-              {PRIVACY.map(({ icon: Icon, title, body }) => (
-                <div key={title}>
+              {PRIVACY.map(({ icon: Icon, title, body }, pi) => (
+                <Reveal key={title} delay={pi * 110}>
                   <span className="flex size-10 items-center justify-center rounded-full border border-border bg-bg">
                     <Icon className="size-[18px] text-fg-2" aria-hidden />
                   </span>
                   <h3 className="display mt-5 text-[28px]">{title}</h3>
                   <p className="mt-2 text-[14px] text-fg-2">{body}</p>
-                </div>
+                </Reveal>
               ))}
             </div>
             <div className="mt-12 grid gap-6 border-t border-border pt-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">

@@ -1,18 +1,50 @@
 // formato es-AR: $42.000 · $1,2 M · 38 %
+import { cache } from 'react'
+
+// moneda de visualización. no convierte: cambia el símbolo con el que se muestran los montos que cargaste
+export const CURRENCIES = {
+  ARS: { symbol: '$', label: 'Peso argentino', short: 'ARS' },
+  USD: { symbol: 'US$', label: 'Dólar', short: 'USD' },
+  EUR: { symbol: '€', label: 'Euro', short: 'EUR' },
+  BRL: { symbol: 'R$', label: 'Real', short: 'BRL' },
+} as const
+export type Currency = keyof typeof CURRENCIES
+export const isCurrency = (v: unknown): v is Currency => typeof v === 'string' && v in CURRENCIES
+
+export type FormatPrefs = { currency: Currency; decimals: boolean }
+const DEFAULT_FORMAT: FormatPrefs = { currency: 'ARS', decimals: false }
+
+// en el servidor la preferencia vive por request (react cache); en el navegador, en una variable del módulo
+const requestFormat = cache((): { v: FormatPrefs | null } => ({ v: null }))
+let clientFormat: FormatPrefs = DEFAULT_FORMAT
+
+/** servidor: se llama una vez por request, después de leer al usuario */
+export function setRequestFormat(p: FormatPrefs) {
+  requestFormat().v = p
+}
+/** navegador: lo llama el provider del layout */
+export function setClientFormat(p: FormatPrefs) {
+  clientFormat = p
+}
+export const currentFormat = (): FormatPrefs => requestFormat().v ?? clientFormat
 
 const nf0 = new Intl.NumberFormat('es-AR', { maximumFractionDigits: 0 })
 const nf2 = new Intl.NumberFormat('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 
 export function money(cents: number, opts: { decimals?: boolean; sign?: boolean; compact?: boolean } = {}): string {
+  const fmt = currentFormat()
   const v = cents / 100
   const abs = Math.abs(v)
   let body: string
   if (opts.compact && abs >= 1_000_000) body = `${new Intl.NumberFormat('es-AR', { maximumFractionDigits: 1 }).format(abs / 1_000_000)} M`
   else if (opts.compact && abs >= 10_000) body = `${nf0.format(Math.round(abs / 1000))} mil`
-  else body = opts.decimals ? nf2.format(abs) : nf0.format(Math.round(abs))
+  else body = (opts.decimals ?? fmt.decimals) ? nf2.format(abs) : nf0.format(Math.round(abs))
   const sign = v < 0 ? '−' : opts.sign && v > 0 ? '+' : ''
-  return `${sign}$${body}`
+  return `${sign}${CURRENCIES[fmt.currency].symbol}${body}`
 }
+
+/** tope por movimiento: $100.000.000.000 (lo mismo que valida el servidor) */
+export const MAX_AMOUNT_CENTS = 100_000_000_000_00
 
 export function pct(ratio: number | null | undefined, opts: { sign?: boolean; decimals?: number } = {}): string {
   if (ratio === null || ratio === undefined || !Number.isFinite(ratio)) return '—'
@@ -72,3 +104,5 @@ export function parseMoneyInput(raw: string): number | null {
   if (!Number.isFinite(v)) return null
   return Math.round(v * 100)
 }
+
+export const currencySymbol = () => CURRENCIES[currentFormat().currency].symbol

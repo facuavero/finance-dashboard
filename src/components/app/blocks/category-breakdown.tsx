@@ -42,7 +42,7 @@ export function CategoryBreakdown({ slices, subtitle, href = '/estadisticas' }: 
                     <span className="num w-10 text-right text-muted">{pct(r.cents / total)}</span>
                   </div>
                   <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-surface-2" aria-hidden>
-                    <div className={r.other ? 'h-full rounded-full bg-chart-2' : 'h-full rounded-full bg-chart-1'} style={{ width: `${Math.max(1, (r.cents / max) * 100)}%` }} />
+                    <div className={r.other ? 'bar-grow h-full rounded-full bg-chart-2' : 'bar-grow h-full rounded-full bg-chart-1'} style={{ width: `${Math.max(1, (r.cents / max) * 100)}%` }} />
                   </div>
                 </li>
               ))}

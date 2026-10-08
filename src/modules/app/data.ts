@@ -1,5 +1,6 @@
 import 'server-only'
 import { cache } from 'react'
+import { cookies } from 'next/headers'
 import { eq } from 'drizzle-orm'
 import { getDb, schema } from '@/db/client'
 import { requireUser } from '@/modules/auth/session'
@@ -9,12 +10,17 @@ import { loadFinance, loadSignals } from '@/modules/finance/repo'
 import { combineSignals } from '@/modules/insights/combined'
 import { buildRecommendations } from '@/modules/ai/rules'
 import { applyStates, buildAlerts } from '@/modules/alerts/engine'
+import { setRequestFormat } from '@/lib/format'
+import { PREFS_COOKIE, parsePrefs, toCurrency } from '@/modules/settings/prefs'
 
 /** todo lo que necesitan las pantallas privadas, calculado una sola vez por request */
 export const getAppData = cache(async () => {
   const user = await requireUser()
   const db = await getDb()
   const today = todayISO()
+  const prefs = parsePrefs((await cookies()).get(PREFS_COOKIE)?.value)
+  const currency = toCurrency(user.currency)
+  setRequestFormat({ currency, decimals: prefs.decimals })
   const [finance, signals, states, integrations] = await Promise.all([
     loadFinance(db, user.id),
     loadSignals(db, user.id),
@@ -44,7 +50,7 @@ export const getAppData = cache(async () => {
   const allAlerts = buildAlerts(ctx, { combined, recommendations })
   const { active: alerts, hidden: hiddenAlerts } = applyStates(allAlerts, states)
 
-  return { user, db, today, finance, signals, ctx, recommendations, combined, alerts, hiddenAlerts, alertStates: states, integrations }
+  return { user, db, today, prefs, currency, finance, signals, ctx, recommendations, combined, alerts, hiddenAlerts, alertStates: states, integrations }
 })
 
 export type AppData = Awaited<ReturnType<typeof getAppData>>

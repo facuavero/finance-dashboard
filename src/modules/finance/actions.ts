@@ -6,6 +6,7 @@ import { and, eq } from 'drizzle-orm'
 import { getDb, schema } from '@/db/client'
 import { requireUser } from '@/modules/auth/session'
 import { todayISO } from '@/modules/analytics/dates'
+import { MAX_AMOUNT_CENTS } from '@/lib/format'
 import { seedDemoFinance } from '@/modules/demo/seed'
 import { contributeToGoal, createTransaction, deleteBudget, deleteGoal, deleteTransactions, updateTransaction, upsertBudget, upsertGoal } from './repo'
 
@@ -14,7 +15,7 @@ export type ActionResult<T = undefined> = { ok: true; data?: T; message?: string
 const refresh = () => revalidatePath('/', 'layout')
 
 const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Fecha inválida')
-const cents = z.number().int().positive('El monto tiene que ser mayor a 0').max(100_000_000_000_00, 'Monto demasiado grande')
+const cents = z.number().int().positive('El monto tiene que ser mayor a 0').max(MAX_AMOUNT_CENTS, 'Monto demasiado grande')
 
 const txnSchema = z.object({
   type: z.enum(['expense', 'income']),

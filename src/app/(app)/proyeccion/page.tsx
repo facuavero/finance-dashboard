@@ -1,3 +1,4 @@
+import { AskAi } from '@/components/app/ask-ai'
 import type { Metadata } from 'next'
 import { Minus, Plus, Equal } from 'lucide-react'
 import { Card, CardBody, CardHeader } from '@/components/ui/card'
@@ -20,7 +21,7 @@ export default async function Proyeccion() {
 
   return (
     <>
-      <PageHeader title="Proyección" description="Qué puede pasar: saldo a fin de mes, capacidad de ahorro y hacia dónde va tu capital. Todo lo estimado está marcado como tal." />
+      <PageHeader title="Proyección" description="Qué puede pasar: saldo a fin de mes, capacidad de ahorro y hacia dónde va tu capital. Todo lo estimado está marcado como tal." actions={<AskAi topic="proyeccion" suggestions={["¿Con cuánto cierro el mes?", "¿Cuánto puedo ahorrar por mes?", "¿Qué pasa si recorto 10 % de gastos?"]} />} />
 
       <div className="mb-5 flex flex-wrap items-center gap-3 rounded-2xl border border-border bg-surface px-4 py-2.5 text-[13px] text-fg-2">
         <span className="flex items-center gap-1.5">

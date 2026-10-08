@@ -12,11 +12,12 @@ import { Dialog, SheetContent } from '@/components/ui/dialog'
 import { ConfirmDialog } from '@/components/ui/alert-dialog'
 import { Popover, PopoverContent, PopoverTrigger, Segmented } from '@/components/ui/misc'
 import { PageHeader, EmptyState } from '@/components/app/states'
+import { AskAi } from '@/components/app/ask-ai'
 import { CategoryIcon } from '@/components/app/icons'
 import { Money } from '@/components/app/money'
 import { PAYMENT_METHODS, TxnForm, useQuickAdd, type CatOption, type TxnDraft } from '@/components/app/quick-add'
 import { ImportDialog } from './import-dialog'
-import { dateLong, money, parseMoneyInput, plural } from '@/lib/format'
+import { currencySymbol, dateLong, money, parseMoneyInput, plural } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import { deleteTransactionsAction } from '@/modules/finance/actions'
 import type { Txn } from '@/modules/analytics/types'
@@ -131,7 +132,7 @@ export function TransactionsView({ rows, categories, today, initialQuery, openIm
     ...(f.type !== 'all' ? [{ label: f.type === 'expense' ? 'Gastos' : 'Ingresos', clear: () => set('type', 'all') }] : []),
     ...f.cats.map((id) => ({ label: categories.find((c) => c.id === id)?.name ?? 'Categoría', clear: () => set('cats', f.cats.filter((x) => x !== id)) })),
     ...f.methods.map((m) => ({ label: PAYMENT_METHODS.find((p) => p.value === m)?.label ?? m, clear: () => set('methods', f.methods.filter((x) => x !== m)) })),
-    ...(f.min || f.max ? [{ label: `Monto ${f.min ? `desde $${f.min}` : ''} ${f.max ? `hasta $${f.max}` : ''}`.trim(), clear: () => setF((p) => ({ ...p, min: '', max: '' })) }] : []),
+    ...(f.min || f.max ? [{ label: `Monto ${f.min ? `desde ${currencySymbol()}${f.min}` : ''} ${f.max ? `hasta ${currencySymbol()}${f.max}` : ''}`.trim(), clear: () => setF((p) => ({ ...p, min: '', max: '' })) }] : []),
     ...(f.recurringOnly ? [{ label: 'Solo recurrentes', clear: () => set('recurringOnly', false) }] : []),
   ]
   const clearAll = () => setF((p) => ({ ...p, q: '', type: 'all', cats: [], methods: [], min: '', max: '', recurringOnly: false, range: 'all' }))
@@ -189,6 +190,7 @@ export function TransactionsView({ rows, categories, today, initialQuery, openIm
         description="Buscá, filtrá y editá. Click en un movimiento para ver el detalle."
         actions={
           <>
+            <AskAi topic="movimientos" suggestions={['¿En qué gasté más este mes?', '¿Cuáles fueron mis gastos más grandes?', '¿Tengo gastos repetidos que no registré como recurrentes?']} />
             <Button variant="secondary" onClick={() => setImportOpen(true)}>
               <Upload /> Importar
             </Button>
@@ -285,7 +287,7 @@ export function TransactionsView({ rows, categories, today, initialQuery, openIm
           <table className="w-full text-[13px] md:table-fixed">
             <caption className="sr-only">Movimientos filtrados</caption>
             <colgroup>
-              <col className="w-10" />
+              <col className="w-14" />
               {!byDay && <col className="w-20" />}
               <col />
               <col className="hidden w-[26%] md:table-column" />
@@ -294,7 +296,7 @@ export function TransactionsView({ rows, categories, today, initialQuery, openIm
             </colgroup>
             <thead className="hidden border-b border-border text-left font-mono text-[11px] tracking-[0.06em] text-muted uppercase md:table-header-group">
               <tr>
-                <th className="w-10 py-3 pl-5">
+                <th className="w-14 py-3 pl-5">
                   <input type="checkbox" aria-label="Seleccionar todos los visibles" checked={allVisibleSelected} onChange={() => setSelected(allVisibleSelected ? new Set() : new Set(visible.map((r) => r.id)))} className="size-4 accent-[var(--accent)]" />
                 </th>
                 {!byDay && <th className="py-2 font-medium">Fecha</th>}
@@ -322,10 +324,10 @@ export function TransactionsView({ rows, categories, today, initialQuery, openIm
                 )}
                 {g.rows.map((r) => (
                   <tr key={r.id} className={cn('group cursor-pointer hover:bg-surface-2', selected.has(r.id) && 'bg-accent-soft/60')} onClick={() => setEditing(r)}>
-                    <td className="w-10 py-3 pl-5 align-middle" onClick={(e) => e.stopPropagation()}>
+                    <td className="w-14 py-3 pl-5 align-middle" onClick={(e) => e.stopPropagation()}>
                       <input type="checkbox" aria-label={`Seleccionar ${r.description || r.categoryName}`} checked={selected.has(r.id)} onChange={() => toggle(r.id)} className="size-4 accent-[var(--accent)]" />
                     </td>
-                    {!byDay && <td className="py-3 font-mono whitespace-nowrap text-fg-2">{r.date.split('-').reverse().slice(0, 2).join('/')}</td>}
+                    {!byDay && <td className="py-3 font-figure whitespace-nowrap text-fg-2">{r.date.split('-').reverse().slice(0, 2).join('/')}</td>}
                     <td className="max-w-[58vw] py-3 pr-3 md:max-w-0">
                       {/* avatar con el ícono de la categoría (mercury) */}
                       <span className="flex items-center gap-3">

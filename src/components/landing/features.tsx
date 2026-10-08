@@ -28,7 +28,7 @@ function QuickAdd() {
     <Card className="p-4 shadow-sm">
       <p className="text-[12px] text-muted">Nuevo gasto</p>
       <p className="mt-1 flex items-center text-[32px] leading-none font-semibold tracking-[-0.03em]">
-        <span className="font-mono tracking-[-0.04em]">$4.500</span><span className="ml-0.5 h-8 w-px animate-pulse bg-accent-solid" />
+        <span className="font-figure tracking-[-0.03em]">$4.500</span><span className="ml-0.5 h-8 w-px animate-pulse bg-accent-solid" />
       </p>
       <div className="mt-4 flex flex-wrap gap-1.5">
         {['Café y snacks', 'Supermercado', 'Transporte'].map((c, i) => (
@@ -65,7 +65,7 @@ function Leaks() {
               <p className="truncate text-[13px] font-medium">{r.name}</p>
               <p className="text-[12px] text-muted">{r.meta}</p>
             </div>
-            <p className="num font-mono tracking-[-0.03em] shrink-0 text-[13px] font-medium">
+            <p className="num font-figure tracking-[-0.02em] shrink-0 text-[13px] font-medium">
               {r.value}
               <span className="font-normal text-muted">/mes</span>
             </p>
@@ -92,7 +92,7 @@ function Budget() {
         <Badge tone="positive">En rango</Badge>
       </div>
       <p className="mt-2 text-[13px] text-fg-2">
-        <span className="num font-mono tracking-[-0.03em] font-semibold text-fg">$57.100</span> de $170.000
+        <span className="num font-figure tracking-[-0.02em] font-semibold text-fg">$57.100</span> de $170.000
       </p>
       <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-surface-3">
         <div className="h-full w-[34%] rounded-full bg-fg" />
@@ -110,7 +110,7 @@ function Forecast() {
       <div className="flex items-start justify-between gap-2">
         <div>
           <p className="text-[12px] text-muted">Cierre de octubre</p>
-          <p className="mt-1 font-mono text-[22px] leading-tight font-medium tracking-[-0.045em]">$2.623.042</p>
+          <p className="mt-1 font-figure text-[22px] leading-tight font-medium tracking-[-0.03em]">$2.623.042</p>
         </div>
         <EstimateTag />
       </div>
@@ -139,7 +139,7 @@ function Upcoming() {
               <p className="truncate text-[13px] font-medium">{r.title}</p>
               <p className="text-[12px] text-muted">{r.meta}</p>
             </div>
-            <p className="num font-mono tracking-[-0.03em] shrink-0 text-[13px] font-medium">{r.value}</p>
+            <p className="num font-figure tracking-[-0.02em] shrink-0 text-[13px] font-medium">{r.value}</p>
           </div>
         ))}
       </div>
@@ -175,7 +175,7 @@ export function Recommendation() {
     <Card className="overflow-hidden" aria-hidden>
       <div className="p-5">
         <div className="flex flex-wrap items-center gap-2 text-[12px]">
-          <span className="num font-mono tracking-[-0.03em] text-muted">04</span>
+          <span className="num font-figure tracking-[-0.02em] text-muted">04</span>
           <Badge tone="warning">Prioridad media</Badge>
           <Badge tone="outline">Microgastos</Badge>
         </div>
@@ -192,7 +192,7 @@ export function Recommendation() {
           <p className="flex items-center gap-2 text-[12px] text-muted">
             Impacto estimado <EstimateTag />
           </p>
-          <p className="mt-1 font-mono text-[26px] leading-tight font-medium tracking-[-0.045em] text-positive">
+          <p className="mt-1 font-figure text-[26px] leading-tight font-medium tracking-[-0.03em] text-positive">
             $33.399<span className="text-[13px] font-normal text-muted">/mes</span>
           </p>
           <p className="text-[12px] text-muted">$400.794 al año</p>

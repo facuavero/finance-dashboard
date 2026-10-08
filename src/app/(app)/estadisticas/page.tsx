@@ -1,3 +1,4 @@
+import { AskAi } from '@/components/app/ask-ai'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
@@ -36,7 +37,7 @@ export default async function Estadisticas({ searchParams }: { searchParams: Pro
 
   return (
     <>
-      <PageHeader title="Estadísticas" description="Cómo evolucionan tu capital, tus ingresos y tus gastos. Cambiá la unidad para comparar semanas, meses, trimestres o años." />
+      <PageHeader title="Estadísticas" description="Cómo evolucionan tu capital, tus ingresos y tus gastos. Cambiá la unidad para comparar semanas, meses, trimestres o años." actions={<AskAi topic="estadisticas" suggestions={["¿En qué categoría crecieron más mis gastos?", "¿Cómo viene este mes contra mi promedio?", "¿Cuál fue mi mejor mes de ahorro?"]} />} />
 
       {/* filtros de período: una fila arriba de todo */}
       <div className="mb-5 flex flex-wrap items-center gap-3">
@@ -131,7 +132,7 @@ export default async function Estadisticas({ searchParams }: { searchParams: Pro
                         {c.name}
                       </span>
                       <span className="mt-1 block h-1 rounded-full bg-surface-2">
-                        <span className="block h-1 rounded-full bg-chart-1" style={{ width: `${Math.max(1, c.pct * 100)}%` }} />
+                        <span className="bar-grow block h-1 rounded-full bg-chart-1" style={{ width: `${Math.max(1, c.pct * 100)}%` }} />
                       </span>
                     </td>
                     <td className="py-2 text-right font-medium">

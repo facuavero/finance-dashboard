@@ -78,13 +78,12 @@ const PRIMARY = NAV[0].items
 const GROUPED = [NAV[1], NAV[2]]
 const isActive = (pathname: string, href: string) => pathname === href || pathname.startsWith(`${href}/`)
 
-/** tab pill de la barra superior (gemini). la activa lleva fondo y un punto rubí */
+/** tab pill de la barra superior (gemini). la activa lleva fondo y texto en tinta */
 function TopTab({ item }: { item: NavItem }) {
   const pathname = usePathname()
   const active = isActive(pathname, item.href)
   return (
     <Link href={item.href} aria-current={active ? 'page' : undefined} className={cn('flex h-8 items-center gap-1.5 rounded-full px-3.5 text-[13.5px] transition-colors', active ? 'bg-surface-3 font-medium text-fg' : 'text-muted hover:text-fg')}>
-      {active && <span className="size-1.5 rounded-full bg-accent-solid" aria-hidden />}
       {item.label}
     </Link>
   )
@@ -97,7 +96,6 @@ function TopMenu({ group, alertCount }: { group: (typeof NAV)[number]; alertCoun
   return (
     <Menu>
       <MenuTrigger className={cn('flex h-8 cursor-pointer items-center gap-1.5 rounded-full px-3.5 text-[13.5px] outline-none transition-colors data-[state=open]:text-fg', active ? 'bg-surface-3 font-medium text-fg' : 'text-muted hover:text-fg')}>
-        {active && <span className="size-1.5 rounded-full bg-accent-solid" aria-hidden />}
         {group.group}
         {group.group === 'Agenda' && alertCount > 0 && <span className="num rounded-full bg-accent-solid px-1.5 text-[10px] leading-4 font-semibold text-on-accent">{alertCount}</span>}
         <ChevronDown className="size-3.5 opacity-60" aria-hidden />
@@ -339,6 +337,7 @@ function CommandPalette({ open, onOpenChange, onNew }: { open: boolean; onOpenCh
                   label="Nuevo movimiento"
                   hint="N"
                 />
+                <PaletteItem onSelect={() => go('/inicio?asistente=1')} icon={Sparkles} label="Cargar con el asistente de IA" />
                 <PaletteItem onSelect={() => go('/movimientos?importar=1')} icon={ArrowLeftRight} label="Importar movimientos (CSV)" />
                 <PaletteItem onSelect={() => go('/presupuestos?nuevo=1')} icon={PiggyBank} label="Crear presupuesto" />
                 <PaletteItem onSelect={() => go('/objetivos?nuevo=1')} icon={Target} label="Crear objetivo" />

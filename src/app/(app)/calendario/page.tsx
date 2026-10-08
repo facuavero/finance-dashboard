@@ -1,3 +1,4 @@
+import { AskAi } from '@/components/app/ask-ai'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { CalendarDays, CircleMinus, CirclePlus, CircleHelp, Circle, Plug } from 'lucide-react'
@@ -40,7 +41,7 @@ export default async function Calendario() {
 
   return (
     <>
-      <PageHeader title="Calendario" description="Qué puede pasar con tu plata en las próximas semanas: cruzamos tus movimientos, pagos recurrentes, Gmail y Calendar." />
+      <PageHeader title="Calendario" description="Qué puede pasar con tu plata en las próximas semanas: cruzamos tus movimientos, pagos recurrentes, Gmail y Calendar." actions={<AskAi topic="calendario" suggestions={["¿Qué pagos tengo esta semana?", "¿Cuánto voy a gastar en las próximas 2 semanas?", "¿Alcanza mi saldo para lo que viene?"]} />} />
 
       {!connected && (
         <Card className="mb-5 flex flex-col gap-3 p-5 sm:flex-row sm:items-center">
@@ -84,7 +85,7 @@ export default async function Calendario() {
                   className={cn('flex aspect-square flex-col items-center justify-center rounded-md border text-[11px]', d === today ? 'border-fg' : 'border-transparent', past && 'opacity-40')}
                   style={{ background: v ? `color-mix(in oklab, var(--chart-1) ${Math.round(15 + (v / maxDay) * 60)}%, var(--surface))` : 'var(--surface-2)' }}
                 >
-                  <span className={cn('font-mono', v / maxDay > 0.5 && 'font-semibold text-bg')}>{Number(d.slice(8))}</span>
+                  <span className={cn('font-figure', v / maxDay > 0.5 && 'font-semibold text-bg')}>{Number(d.slice(8))}</span>
                 </div>
               )
             })}

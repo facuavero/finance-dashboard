@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/card'
 import { SimulatorChart } from '@/components/charts/charts'
 import { Money } from '@/components/app/money'
 import { simulate } from '@/modules/analytics/simulator'
+import { currencySymbol } from '@/lib/format'
 import { cn } from '@/lib/utils'
 
 type V = { initial: number; saving: number; invest: number; rate: number; reduction: number }
@@ -42,7 +43,7 @@ export function Simulator({ defaults }: { defaults: V }) {
                 {f.label}
               </label>
               <div className="flex items-center gap-1 text-[13px]">
-                {f.unit === '$' && <span className="text-muted">$</span>}
+                {f.unit === '$' && <span className="text-muted">{currencySymbol()}</span>}
                 <input
                   aria-label={`${f.label} (valor)`}
                   inputMode="decimal"

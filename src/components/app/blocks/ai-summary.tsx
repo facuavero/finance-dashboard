@@ -1,10 +1,12 @@
 import Link from 'next/link'
 import { Sparkles } from 'lucide-react'
+import { Delta, Money } from '@/components/app/money'
 import { getAppData } from '@/modules/app/data'
 import { generateReport } from '@/modules/ai/service'
 import { ruleSummary } from '@/modules/ai/rules'
+import { monthName, pct } from '@/lib/format'
 
-function Frame({ text, engine, note, pending }: { text: string; engine: string; note?: string | null; pending?: boolean }) {
+function Frame({ text, engine, note, pending, facts, tip }: { text: string; engine: string; note?: string | null; pending?: boolean; facts: React.ReactNode; tip: React.ReactNode }) {
   return (
     // "daily recap" de fey: prosa protagonista sobre un brillo rubí
     <section aria-labelledby="ai-summary-title" className="relative overflow-hidden rounded-card border border-border bg-surface p-6 sm:p-7">
@@ -19,23 +21,61 @@ function Frame({ text, engine, note, pending }: { text: string; engine: string; 
         <span className="ml-auto font-mono text-[11px] text-muted">{pending ? 'Analizando…' : engine}</span>
       </div>
       <p className={`money relative mt-4 text-[17px] leading-[1.6] font-medium text-fg sm:text-[18px] ${pending ? 'opacity-60' : ''}`}>{text}</p>
+      {facts}
       <div className="relative mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 text-[13px]">
         <Link href="/ia" className="font-medium text-accent hover:underline">
           Ver recomendaciones →
         </Link>
         {note && <span className="text-muted">{note}</span>}
       </div>
+      {tip}
     </section>
   )
 }
 
-export async function AiSummary() {
-  const { db, user, ctx, recommendations, combined } = await getAppData()
-  const report = await generateReport(db, user, ctx, recommendations, combined)
-  return <Frame text={report.summary} engine={report.engine} note={report.external ? null : report.note} />
+/** tres datos para leer el mes de un vistazo; se calculan, no los inventa la IA */
+async function SummaryFacts() {
+  const { ctx, today } = await getAppData()
+  if (!ctx.hasData) return null
+  const top = ctx.categories[0]
+  const eom = ctx.forecast.endOfMonthBalanceCents
+  return (
+    <dl className="relative mt-5 grid grid-cols-1 gap-px overflow-hidden rounded-2xl border border-border bg-border min-[420px]:grid-cols-3">
+      <div className="bg-surface px-3.5 py-3">
+        <dt className="label-caps !text-[10px]">Gastos vs. antes</dt>
+        <dd className="mt-1.5">
+          <Delta ratio={ctx.month.deltas.expense.pct} goodWhenUp={false} label="" className="!text-[13px]" />
+        </dd>
+      </div>
+      <div className="bg-surface px-3.5 py-3">
+        <dt className="label-caps !text-[10px]">Mayor gasto</dt>
+        <dd className="mt-1.5 truncate text-[13px] font-medium">
+          {top ? (
+            <>
+              {top.name} <span className="font-normal text-muted">{pct(top.pct)}</span>
+            </>
+          ) : (
+            <span className="font-normal text-muted">—</span>
+          )}
+        </dd>
+      </div>
+      <div className="bg-surface px-3.5 py-3">
+        <dt className="label-caps !text-[10px]">Cierre de {monthName(today)}</dt>
+        <dd className="mt-1.5 text-[13px] font-medium">
+          <Money cents={eom} /> <span className="font-normal text-muted">est.</span>
+        </dd>
+      </div>
+    </dl>
+  )
 }
 
-export async function AiSummaryFallback() {
+export async function AiSummary({ tip }: { tip: React.ReactNode }) {
+  const { db, user, ctx, recommendations, combined } = await getAppData()
+  const report = await generateReport(db, user, ctx, recommendations, combined)
+  return <Frame text={report.summary} engine={report.engine} note={report.external ? null : report.note} facts={<SummaryFacts />} tip={tip} />
+}
+
+export async function AiSummaryFallback({ tip }: { tip: React.ReactNode }) {
   const { ctx } = await getAppData()
-  return <Frame text={ruleSummary(ctx)} engine="" pending />
+  return <Frame text={ruleSummary(ctx)} engine="" pending facts={<SummaryFacts />} tip={tip} />
 }

@@ -32,7 +32,7 @@ export function DialogContent({ className, children, title, description, wide, .
             <X className="size-4" />
           </D.Close>
         </div>
-        <div className="overflow-y-auto px-6 pt-2 pb-6 scrollbar-thin">{children}</div>
+        <div className="overflow-x-hidden overflow-y-auto px-6 pt-2 pb-6 scrollbar-thin">{children}</div>
       </D.Content>
     </D.Portal>
   )

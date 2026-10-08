@@ -11,8 +11,10 @@ import { CapitalChart, Legend } from '@/components/charts/charts'
 import { Delta, Money } from '@/components/app/money'
 import { EstimateTag } from '@/components/app/states'
 import { Onboarding } from './onboarding'
+import { AssistantCard } from '@/components/app/assistant-card'
 import { getAppData } from '@/modules/app/data'
 import { upcoming } from '@/modules/insights/upcoming'
+import { AiTipAside, TipAside } from '@/components/app/blocks/tip'
 import { balanceAt } from '@/modules/analytics/summary'
 import { endOfMonth, previousFullMonths } from '@/modules/analytics/dates'
 import { dateLong, money, monthName, pct } from '@/lib/format'
@@ -25,12 +27,22 @@ function greeting() {
   return h < 6 ? 'Buenas noches' : h < 13 ? 'Buen día' : h < 20 ? 'Buenas tardes' : 'Buenas noches'
 }
 
-export default async function Inicio({ searchParams }: { searchParams: Promise<{ bienvenida?: string }> }) {
-  const { user, ctx, alerts, combined, today, finance } = await getAppData()
+export default async function Inicio({ searchParams }: { searchParams: Promise<{ bienvenida?: string; asistente?: string }> }) {
+  const { user, ctx, alerts, combined, today, finance, prefs } = await getAppData()
   const sp = await searchParams
   const first = user.name.split(' ')[0]
 
-  if (!ctx.hasData) return <Onboarding name={first} welcome={!!sp.bienvenida} />
+  const assistantCats = finance.cats.map((c) => ({ id: c.id, name: c.name }))
+  if (!ctx.hasData) {
+    return (
+      <>
+        <div className="mx-auto max-w-3xl pt-4">
+          <AssistantCard categories={assistantCats} force={!!sp.asistente} />
+        </div>
+        <Onboarding name={first} welcome={!!sp.bienvenida} />
+      </>
+    )
+  }
 
   const m = ctx.month
   // capital al cierre de cada mes (real), hoy, y el cierre estimado de este mes (punteado)
@@ -39,6 +51,12 @@ export default async function Inicio({ searchParams }: { searchParams: Promise<{
   if (endOfMonth(today) > today) capitalData.push({ label: endOfMonth(today), real: null, est: ctx.forecast.endOfMonthBalanceCents })
   const monthStartBalance = ctx.forecast.series[0]?.realCents ?? ctx.balanceCents
   const up = upcoming(ctx.recurring, combined, today)
+  // un tip distinto en cada visita (la página es dinámica: se vuelve a elegir en cada request)
+  const tip = prefs.tips ? (
+    <Suspense fallback={<TipAside tip={null} pending />}>
+      <AiTipAside />
+    </Suspense>
+  ) : null
 
   const kpis = [
     { label: 'Ingresos', cents: m.incomeCents, delta: m.deltas.income.pct, goodWhenUp: true },
@@ -56,6 +74,8 @@ export default async function Inicio({ searchParams }: { searchParams: Promise<{
           {greeting()}, {first}
         </h1>
       </div>
+
+      <AssistantCard categories={assistantCats} force={!!sp.asistente} />
 
       <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
         {/* izquierda: qué pasó. capital, gráfico y kpis en una sola pieza */}
@@ -85,7 +105,7 @@ export default async function Inicio({ searchParams }: { searchParams: Promise<{
               {kpis.map((k, i) => (
                 <div key={k.label} className={cn('px-5 py-5 sm:px-7', i % 2 === 1 && 'border-l border-border', i >= 2 && 'border-t border-border lg:border-t-0', i === 2 && 'lg:border-l')}>
                   <dt className="label-caps">{k.label}</dt>
-                  <dd className="mt-2 text-[20px] leading-none font-medium sm:text-[22px]">{k.cents !== undefined ? <Money cents={k.cents} /> : <span className="money font-mono tracking-[-0.03em]">{pct(k.ratio ?? null)}</span>}</dd>
+                  <dd className="mt-2 text-[20px] leading-none font-medium sm:text-[22px]">{k.cents !== undefined ? <Money cents={k.cents} /> : <span className="money font-figure tracking-[-0.02em]">{pct(k.ratio ?? null)}</span>}</dd>
                   <Delta ratio={k.delta} goodWhenUp={k.goodWhenUp} unit={k.unit} label="" className="mt-2" />
                 </div>
               ))}
@@ -96,8 +116,8 @@ export default async function Inicio({ searchParams }: { searchParams: Promise<{
 
         {/* derecha: feed. por qué pasó y qué viene */}
         <div className="min-w-0 space-y-5">
-          <Suspense fallback={<AiSummaryFallback />}>
-            <AiSummary />
+          <Suspense fallback={<AiSummaryFallback tip={prefs.tips ? <TipAside tip={null} pending /> : null} />}>
+            <AiSummary tip={tip} />
           </Suspense>
           <Card>
             <CardHeader title="Lo importante" subtitle={alerts.length ? `${alerts.length} alertas, por prioridad` : undefined} action={<Link href="/alertas" className="text-[13px] text-accent hover:underline">Ver todas</Link>} />
