@@ -11,7 +11,7 @@ import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { Segmented, Switch } from '@/components/ui/misc'
 import { applyPrefs } from '@/components/app/prefs-sync'
 import { CategoryIcon, ICON_NAMES } from '@/components/app/icons'
-import { CURRENCIES, money, parseMoneyInput, type Currency } from '@/lib/format'
+import { CURRENCIES, money, parseBaseMoney, type Currency, amountText } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import { changePasswordAction, closeOtherSessionsAction, saveCategoryAction, updateNumbersAction, updatePreferencesAction, updateProfileAction } from '@/modules/settings/actions'
 import { LANGUAGES, type Prefs } from '@/modules/settings/prefs'
@@ -24,8 +24,8 @@ export function SettingsView({ user, categories, sessions, currency, prefs }: { 
   const router = useRouter()
   const [pending, start] = useTransition()
   const [name, setName] = useState(user.name)
-  const [balance, setBalance] = useState(String(user.initialBalanceCents / 100))
-  const [threshold, setThreshold] = useState(String(user.microThresholdCents / 100))
+  const [balance, setBalance] = useState(amountText(user.initialBalanceCents))
+  const [threshold, setThreshold] = useState(amountText(user.microThresholdCents))
   const [kind, setKind] = useState<'expense' | 'income'>('expense')
   const [editing, setEditing] = useState<Partial<Cat> | null>(null)
 
@@ -59,7 +59,7 @@ export function SettingsView({ user, categories, sessions, currency, prefs }: { 
       <Card id="saldo" className="scroll-mt-20">
         <CardHeader title="Punto de partida" subtitle="El capital disponible arranca en este saldo y suma o resta cada movimiento." />
         <CardBody className="space-y-4">
-          <form className="flex items-end gap-2" onSubmit={(e) => { e.preventDefault(); const c = parseMoneyInput(balance); if (c === null) return void toast.error('Monto inválido'); save(() => updateNumbersAction({ initialBalanceCents: c }), `Saldo inicial: ${money(c)}`) }}>
+          <form className="flex items-end gap-2" onSubmit={(e) => { e.preventDefault(); const c = parseBaseMoney(balance); if (c === null) return void toast.error('Monto inválido'); save(() => updateNumbersAction({ initialBalanceCents: c }), `Saldo inicial: ${money(c)}`) }}>
             <Field label="Saldo inicial" htmlFor="s-balance" className="flex-1" hint="Lo que tenías entre cuentas y efectivo antes de tu primer movimiento">
               <Input id="s-balance" inputMode="decimal" value={balance} onChange={(e) => setBalance(e.target.value)} className="num" />
             </Field>
@@ -67,7 +67,7 @@ export function SettingsView({ user, categories, sessions, currency, prefs }: { 
               Guardar
             </Button>
           </form>
-          <form className="flex items-end gap-2" onSubmit={(e) => { e.preventDefault(); const c = parseMoneyInput(threshold); if (!c || c < 10000) return void toast.error('Mínimo $100'); save(() => updateNumbersAction({ microThresholdCents: c }), `Umbral de microgasto: ${money(c)}`) }}>
+          <form className="flex items-end gap-2" onSubmit={(e) => { e.preventDefault(); const c = parseBaseMoney(threshold); if (!c || c < 10000) return void toast.error('Mínimo $100'); save(() => updateNumbersAction({ microThresholdCents: c }), `Umbral de microgasto: ${money(c)}`) }}>
             <Field label="Umbral de microgasto" htmlFor="s-threshold" className="flex-1" hint="Compras por debajo de este monto cuentan como microgastos">
               <Input id="s-threshold" inputMode="decimal" value={threshold} onChange={(e) => setThreshold(e.target.value)} className="num" />
             </Field>
@@ -175,7 +175,7 @@ function PreferencesCard({ currency, prefs }: { currency: Currency; prefs: Prefs
     <Card className="lg:col-span-2">
       <CardHeader title="Preferencias" subtitle="Moneda, idioma y cómo se ve Caudal. Se guardan solas." />
       <CardBody className="divide-y divide-border">
-        <PrefRow title="Moneda" hint="Cambia el símbolo de todos los montos. No convierte: se muestran los números que cargaste.">
+        <PrefRow title="Moneda" hint="Muestra todos tus montos en la moneda elegida, convertidos con la cotización del día. Lo que cargás se guarda en pesos.">
           <Segmented label="Moneda" value={cur} onChange={(v) => commit(v, p)} options={(Object.keys(CURRENCIES) as Currency[]).map((c) => ({ value: c, label: `${CURRENCIES[c].short}` }))} />
         </PrefRow>
         <PrefRow title="Idioma" hint="Por ahora Caudal está en español rioplatense. Inglés viene después." htmlFor="pref-lang">

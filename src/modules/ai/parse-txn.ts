@@ -214,34 +214,48 @@ export function explicitCurrency(text: string): CurrencyCode | null {
   return null
 }
 
-/** pregunta que la IA le hace a la persona antes de cargar. se responde con un botón */
-export type Ask = { question: string; options: { label: string; currency: CurrencyCode }[] }
+/** pesos que vale 1 unidad de cada moneda, y de cuándo es la cotización */
+export type CurrencyRates = { arsPer: Record<CurrencyCode, number>; asOf: string; live: boolean }
+
+/** aviso para la persona: algo que no se entendió, o una conversión que se hizo sola */
+export type Note = { kind: 'unclear' | 'converted'; text: string }
+
+/** pregunta que la IA le hace a la persona antes de cargar. cada opción multiplica los montos (pesos = 1) */
+export type Ask = { question: string; options: { label: string; factor: number }[] }
+
+const fmtNum = (n: number) => new Intl.NumberFormat('es-AR', { maximumFractionDigits: 2 }).format(n)
+
+/** monto escrito en otra moneda → pesos, con el aviso de cuánto fue y a qué cotización */
+export function toArs(cents: number, cur: CurrencyCode, rates: CurrencyRates): { cents: number; note: Note | null } {
+  if (cur === 'ARS') return { cents, note: null }
+  const rate = rates.arsPer[cur]
+  const out = Math.round(cents * rate)
+  return { cents: out, note: { kind: 'converted', text: `${fmtNum(cents / 100)} ${cur} pasados a $${fmtNum(out / 100)} (1 ${cur} = $${fmtNum(rate)}${rates.live ? `, cotización del ${rates.asOf}` : ', cotización aproximada: no pude consultarla'}).` } }
+}
 
 /**
- * 5000 sin más es plata argentina. si la app muestra otra moneda, o el texto dice una moneda distinta a la que muestra la app,
- * no se adivina: se pregunta. Caudal no convierte, así que la respuesta cambia la moneda con la que se muestran los montos.
+ * un 5000 sin moneda es plata argentina. si la app muestra otra moneda, la persona puede estar pensando en esa:
+ * se pregunta antes de cargar. si el texto dice la moneda (usd, dólares...), no se pregunta: se convierte solo.
  */
-export function currencyAsk(text: string, display: CurrencyCode): Ask | null {
-  if (!amountsIn(text).length) return null
-  const said = explicitCurrency(text)
-  const shown = CURRENCY_NAME[display]
-  if (said && said !== display) {
-    return {
-      question: `Escribiste ${CURRENCY_NAME[said]}, pero tu Caudal muestra los montos en ${shown}. ¿Cómo lo cargo?`,
-      options: [
-        { label: `Son ${CURRENCY_NAME[said]}: mostrar en ${said}`, currency: said },
-        { label: `Dejar en ${shown}`, currency: display },
-      ],
-    }
+export function currencyAsk(text: string, display: CurrencyCode, rates: CurrencyRates): Ask | null {
+  if (!amountsIn(text).length || explicitCurrency(text) || display === 'ARS') return null
+  return {
+    question: `No dijiste la moneda. Tu Caudal muestra en ${CURRENCY_NAME[display]}, pero un monto así suele ser en pesos. ¿Qué es?`,
+    options: [
+      { label: 'Son pesos', factor: 1 },
+      { label: `Son ${CURRENCY_NAME[display]} (a $${fmtNum(rates.arsPer[display])})`, factor: rates.arsPer[display] },
+    ],
   }
-  if (!said && display !== 'ARS') {
-    return {
-      question: `No dijiste la moneda. Tu Caudal muestra en ${shown}, pero un monto así suele ser en pesos. ¿Qué es?`,
-      options: [
-        { label: 'Son pesos: mostrar en ARS', currency: 'ARS' },
-        { label: `Son ${shown}`, currency: display },
-      ],
-    }
-  }
-  return null
+}
+
+/** lo que el motor local no pudo deducir del texto */
+export function ruleNotes(text: string, found: Found, today: ISODate): Note[] {
+  const out: Note[] = []
+  if (!found.amount) out.push({ kind: 'unclear', text: 'No encontré el monto.' })
+  if (!found.category) out.push({ kind: 'unclear', text: 'No pude deducir la categoría.' })
+  const dated = dateIn(text, today)
+  const rest = dated ? `${text.slice(0, dated.span[0])} ${text.slice(dated.span[1])}` : text
+  const nums = [...new Set(amountsIn(rest).filter((a) => a.cents <= MAX_CENTS).map((a) => a.cents))]
+  if (nums.length > 1) out.push({ kind: 'unclear', text: `Vi más de un número (${nums.slice(0, 4).map((c) => fmtNum(c / 100)).join(', ')}) y tomé el mayor como monto.` })
+  return out
 }

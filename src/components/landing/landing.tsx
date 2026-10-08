@@ -68,7 +68,7 @@ const FAQ = [
   { q: '¿Tengo que conectar mi banco?', a: 'No. Cargás los movimientos a mano (monto primero, Enter guarda) o importás un CSV. Gmail y Calendar son opcionales y de solo lectura.' },
   { q: '¿Qué ve la IA de mis datos?', a: 'Resultados ya calculados: montos, categorías, fechas y tipo. De correos y eventos, solo un título corto. Nunca el cuerpo de un correo. Podés ver exactamente qué se envía y apagarla.' },
   { q: '¿Qué tan precisas son las predicciones?', a: 'Son estimaciones hechas con tu historial y tus pagos recurrentes, y siempre están marcadas como estimado. Cuanto más cargás, mejor estiman.' },
-  { q: '¿Qué moneda usa?', a: 'Pesos argentinos.' },
+  { q: '¿Qué moneda usa?', a: 'Guarda todo en pesos argentinos y te lo muestra en pesos, dólares, euros o reales, convertido con la cotización del día.' },
   { q: '¿Puedo borrar todo?', a: 'Sí. Desde Privacidad exportás tus datos o borrás la cuenta con todo lo asociado. Desconectar Google revoca el acceso en el momento.' },
   { q: '¿Qué es la cuenta demo?', a: 'Una cuenta compartida con 6 meses de movimientos, presupuestos, objetivos, Gmail y Calendar de ejemplo, todo relativo a hoy. Sirve para ver cómo responde Caudal sin cargar nada. No se puede conectar una cuenta real de Google ahí.' },
 ]

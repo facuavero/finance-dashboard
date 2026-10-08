@@ -6,6 +6,7 @@ import { getAppData } from '@/modules/app/data'
 import { generateReport } from '@/modules/ai/service'
 import { ruleSummary } from '@/modules/ai/rules'
 import { availableEngine } from '@/modules/ai/providers'
+import { AssistantCard } from '@/components/app/assistant-card'
 import { AskBox, Recommendations, RegenerateButton } from './ia-client'
 
 export const metadata: Metadata = { title: 'IA financiera' }
@@ -22,7 +23,7 @@ async function Fallback() {
 }
 
 export default async function IaPage() {
-  const { ctx, user } = await getAppData()
+  const { ctx, user, finance } = await getAppData()
   const engine = availableEngine()
   return (
     <>
@@ -46,6 +47,10 @@ export default async function IaPage() {
             <AskBox />
           </div>
         )}
+      </div>
+      {/* crear categorías, presupuestos, objetivos y movimientos hablándole a la IA */}
+      <div className="mx-auto mt-2 max-w-[760px]">
+        <AssistantCard categories={finance.cats.map((c) => ({ id: c.id, name: c.name }))} embedded />
       </div>
       {ctx.hasData ? (
         <Suspense fallback={<Fallback />}>

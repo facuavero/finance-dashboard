@@ -1,9 +1,9 @@
 import { z } from 'zod'
 import { toISO, toDate, type ISODate } from '@/modules/analytics/dates'
 import { availableEngine, complete, parseJson } from './providers'
-import { MAX_CENTS, currencyAsk, ruleParseTxn, ruleRefine, type Ask, type CurrencyCode, type ParseCat, type ParsedTxn } from './parse-txn'
+import { MAX_CENTS, currencyAsk, explicitCurrency, ruleNotes, ruleParseTxn, ruleRefine, toArs, type Ask, type CurrencyCode, type CurrencyRates, type Note, type ParseCat, type ParsedTxn } from './parse-txn'
 
-export type TxnProposal = { draft: ParsedTxn; engine: string; external: boolean; ask: Ask | null }
+export type TxnProposal = { draft: ParsedTxn; engine: string; external: boolean; ask: Ask | null; notes: Note[] }
 
 const llmSchema = z.object({
   tipo: z.enum(['gasto', 'ingreso']),
@@ -14,12 +14,16 @@ const llmSchema = z.object({
   subcategoria_id: z.string().nullable().optional(),
   metodo: z.enum(['debito', 'credito', 'efectivo', 'transferencia', 'billetera']).nullable().optional(),
   frecuencia: z.enum(['none', 'weekly', 'monthly', 'yearly']).nullable().optional(),
+  moneda: z.enum(['ARS', 'USD', 'EUR', 'BRL']).nullable().optional(),
+  no_entendi: z.array(z.string().max(160)).max(4).optional(),
 })
 
 const SYSTEM = `Sos el asistente de carga de Caudal, una app de finanzas personales de Argentina.
 Convertís lo que escribe la persona en un movimiento. Devolvés SOLO un JSON, sin texto extra.
 Reglas:
 - "monto" es el número que escribió la persona, sin símbolos. No lo conviertas ni asumas dólares: si no dice USD, dólares o u$s de forma explícita, es plata argentina (pesos). "2 lucas" = 2000, "1,5 palos" = 1500000, "25k" = 25000. Si no hay monto, null. Nunca inventes un monto.
+- "moneda": ARS salvo que la persona diga otra de forma explícita (usd, dólares, u$s, euros, reales). Solo la moneda del texto actual.
+- "no_entendi": lista corta (máximo 4) de lo que NO pudiste interpretar o tuviste que suponer (monto dudoso, categoría incierta, fecha ambigua). Vacía si entendiste todo. Frases cortas, en voseo.
 - "fecha" en formato YYYY-MM-DD. Si no dice fecha, usá la fecha de hoy. "ayer", "el lunes", "el 3" se resuelven contra hoy.
 - "tipo": "gasto" salvo que sea claramente plata que entra (sueldo, cobro, venta, reembolso).
 - "categoria_id" y "subcategoria_id": SOLO ids de la lista que te paso, de tipo coherente con el movimiento. Si ninguna encaja, null. Si elegís subcategoría, categoria_id es su categoría padre.
@@ -62,27 +66,47 @@ const toDraft = (o: z.infer<typeof llmSchema>, cats: ParseCat[], today: ISODate,
 /**
  * interpreta el texto. con ia externa (si hay clave y la persona no la desactivó) y, si falla o no hay, con el motor local.
  * lo único que sale hacia la ia: el texto escrito, la fecha de hoy y los nombres de las categorías.
+ * devuelve también lo que no se entendió y las conversiones de moneda, para mostrárselo a la persona.
  */
-export async function proposeTxn(opts: { text: string; cats: ParseCat[]; today: ISODate; allowExternal: boolean; currency: CurrencyCode; previous?: ParsedTxn; instruction?: string }): Promise<TxnProposal> {
-  const { text, cats, today, previous, instruction } = opts
+export async function proposeTxn(opts: { text: string; cats: ParseCat[]; today: ISODate; allowExternal: boolean; currency: CurrencyCode; rates: CurrencyRates; previous?: ParsedTxn; instruction?: string }): Promise<TxnProposal> {
+  const { text, cats, today, previous, instruction, rates } = opts
+  const said = explicitCurrency(previous && instruction ? instruction : text)
   // se pregunta una sola vez, con el texto original: las correcciones no la repiten
-  const ask = previous ? null : currencyAsk(text, opts.currency)
-  const local = (): ParsedTxn => (previous && instruction ? ruleRefine(previous, instruction, cats, today) : ruleParseTxn(text, cats, today).draft)
+  const ask = previous ? null : currencyAsk(text, opts.currency, rates)
+  const finish = (draft: ParsedTxn, engine: string, external: boolean, cur: CurrencyCode | null, notes: Note[]): TxnProposal => {
+    const out = [...notes]
+    // moneda explícita: se convierte a pesos solo. en una corrección, solo si cambió el monto
+    if (cur && cur !== 'ARS' && draft.amountCents && (!previous || draft.amountCents !== previous.amountCents)) {
+      const c = toArs(draft.amountCents, cur, rates)
+      draft = { ...draft, amountCents: Math.min(c.cents, MAX_CENTS) }
+      if (c.note) out.push(c.note)
+    }
+    return { draft, engine, external, ask, notes: out }
+  }
+  const local = () => {
+    if (previous && instruction) return { draft: ruleRefine(previous, instruction, cats, today), notes: [] as Note[] }
+    const r = ruleParseTxn(text, cats, today)
+    return { draft: r.draft, notes: ruleNotes(text, r.found, today) }
+  }
   const engine = availableEngine()
   if (engine && opts.allowExternal) {
     try {
       const prompt = previous && instruction
         ? `Hoy es ${today}.\nCategorías: ${JSON.stringify(catList(cats))}\nMovimiento actual (JSON propio de la app): ${JSON.stringify(draftToLlm(previous))}\nLa persona pide este cambio: ${JSON.stringify(instruction.slice(0, 300))}\nDevolvé el movimiento completo actualizado con esta forma: ${SHAPE}`
         : `Hoy es ${today}.\nCategorías: ${JSON.stringify(catList(cats))}\nTexto de la persona: ${JSON.stringify(text.slice(0, 300))}\nDevolvé JSON con esta forma: ${SHAPE}`
-      const out = llmSchema.parse(parseJson(await complete(engine, { system: SYSTEM, user: prompt, json: true, maxTokens: 600 })))
-      return { draft: toDraft(out, cats, today, previous ?? ruleParseTxn(text, cats, today).draft), engine: `${engine.label} · ${engine.model}`, external: true, ask }
+      const out = llmSchema.parse(parseJson(await complete(engine, { system: SYSTEM, user: prompt, json: true, maxTokens: 700 })))
+      const draft = toDraft(out, cats, today, previous ?? ruleParseTxn(text, cats, today).draft)
+      const notes: Note[] = (out.no_entendi ?? []).map((t) => ({ kind: 'unclear' as const, text: t.trim() })).filter((n) => n.text)
+      if (!draft.amountCents && !notes.length) notes.push({ kind: 'unclear', text: 'No encontré el monto.' })
+      return finish(draft, `${engine.label} · ${engine.model}`, true, out.moneda && out.moneda !== 'ARS' ? out.moneda : said, notes)
     } catch (err) {
       console.error('[caudal] ia externa falló al interpretar el movimiento', err)
     }
   }
-  return { draft: local(), engine: 'Motor de reglas local', external: false, ask }
+  const l = local()
+  return finish(l.draft, 'Motor de reglas local', false, said, l.notes)
 }
 
-const SHAPE = '{"tipo":"gasto|ingreso","monto":number|null,"fecha":"YYYY-MM-DD","descripcion":string|null,"categoria_id":string|null,"subcategoria_id":string|null,"metodo":"debito|credito|efectivo|transferencia|billetera","frecuencia":"none|weekly|monthly|yearly"}'
+const SHAPE = '{"tipo":"gasto|ingreso","monto":number|null,"fecha":"YYYY-MM-DD","descripcion":string|null,"categoria_id":string|null,"subcategoria_id":string|null,"metodo":"debito|credito|efectivo|transferencia|billetera","frecuencia":"none|weekly|monthly|yearly","moneda":"ARS|USD|EUR|BRL","no_entendi":[string]}'
 
 const draftToLlm = (d: ParsedTxn) => ({ tipo: d.type === 'income' ? 'ingreso' : 'gasto', monto: d.amountCents === null ? null : d.amountCents / 100, fecha: d.date, descripcion: d.description, categoria_id: d.categoryId, subcategoria_id: d.subcategoryId, metodo: d.paymentMethod, frecuencia: d.recurrence })

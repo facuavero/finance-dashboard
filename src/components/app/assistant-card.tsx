@@ -5,17 +5,17 @@ import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { ArrowRight, Check, Paperclip, Sparkles, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { CurrencyAsk } from './currency-ask'
+import { AiNotes, CurrencyAsk } from './currency-ask'
 import { applyPlanAction, assistantPlanAction } from '@/modules/ai/actions'
-import type { Plan } from '@/modules/ai/assistant'
-import type { Ask } from '@/modules/ai/parse-txn'
+import { NEW_PREFIX, type Plan } from '@/modules/ai/assistant'
+import type { Ask, Note } from '@/modules/ai/parse-txn'
 import { dateShort, money } from '@/lib/format'
 import { cn } from '@/lib/utils'
 
 type Cat = { id: string; name: string }
-type Proposal = { plan: Plan; engine: string; external: boolean; ask: Ask | null }
+type Proposal = { plan: Plan; engine: string; external: boolean; ask: Ask | null; notes: Note[] }
 
-const EXAMPLES = ['gasté 4500 en pedidosya ayer', 'cobré el sueldo 1.200.000', 'presupuesto de delivery 50000 por mes', 'objetivo viaje 1.500.000 para diciembre']
+const EXAMPLES = ['gasté 4500 en pedidosya ayer', 'cobré el sueldo 1.200.000', 'presupuesto de delivery 50000 por mes', 'objetivo viaje 1.500.000 para diciembre', 'categoría gimnasio', 'pagué 50 usd de netflix']
 const MAX_FILE = 200_000
 const SEEN = 'caudal-assistant-seen'
 
@@ -23,14 +23,14 @@ const KIND: Record<Plan['goals'][number]['kind'], string> = { purchase: 'Compra'
 const PERIOD = { weekly: 'por semana', monthly: 'por mes', yearly: 'por año' }
 const m = (c: number) => money(c, { decimals: c % 100 !== 0 || undefined })
 
-type Row = { key: string; group: 'tx' | 'bu' | 'go'; title: string; detail: string; problem: string | null }
+type Row = { key: string; group: 'ca' | 'tx' | 'bu' | 'go'; title: string; detail: string; problem: string | null }
 
 /**
  * recuadro de bienvenida: se le habla a la IA y carga movimientos, presupuestos y objetivos.
  * acepta texto o un archivo de texto (csv, txt). primero muestra qué va a cargar, después confirma.
  * aparece una vez por sesión del navegador (al ingresar), o cuando se lo pide con ?asistente=1.
  */
-export function AssistantCard({ categories, force }: { categories: Cat[]; force?: boolean }) {
+export function AssistantCard({ categories, force, embedded }: { categories: Cat[]; force?: boolean; embedded?: boolean }) {
   const router = useRouter()
   const [visible, setVisible] = useState(false)
   const [text, setText] = useState('')
@@ -49,14 +49,15 @@ export function AssistantCard({ categories, force }: { categories: Cat[]; force?
       sessionStorage.setItem(SEEN, '1')
     } catch {}
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    if (force || !seen) setVisible(true)
-  }, [force])
+    if (force || embedded || !seen) setVisible(true)
+  }, [force, embedded])
 
   if (!visible) return null
 
-  const catName = (id: string | null) => categories.find((c) => c.id === id)?.name
+  const catName = (id: string | null) => (id?.startsWith(NEW_PREFIX) ? `${id.slice(NEW_PREFIX.length)} (nueva)` : categories.find((c) => c.id === id)?.name)
   const rows: Row[] = proposal
     ? [
+        ...proposal.plan.categories.map((c, i): Row => ({ key: `ca${i}`, group: 'ca', title: c.name, detail: `${c.kind === 'expense' ? 'Gasto' : 'Ingreso'}${c.parentId ? ` · dentro de ${categories.find((x) => x.id === c.parentId)?.name ?? 'otra categoría'}` : ''}`, problem: null })),
         ...proposal.plan.transactions.map((t, i): Row => ({
           key: `tx${i}`,
           group: 'tx',
@@ -75,7 +76,7 @@ export function AssistantCard({ categories, force }: { categories: Cat[]; force?
     startThinking(async () => {
       const r = await assistantPlanAction(input)
       if (!r.ok) return void setError(r.error)
-      setProposal({ plan: r.plan, engine: r.engine, external: r.external, ask: r.ask })
+      setProposal({ plan: r.plan, engine: r.engine, external: r.external, ask: r.ask, notes: r.notes })
       setOff(new Set())
     })
   }
@@ -93,6 +94,7 @@ export function AssistantCard({ categories, force }: { categories: Cat[]; force?
     if (!proposal) return
     const keep = (prefix: string, i: number) => !off.has(`${prefix}${i}`)
     const plan: Plan = {
+      categories: proposal.plan.categories.filter((_, i) => keep('ca', i)),
       transactions: proposal.plan.transactions.filter((_, i) => keep('tx', i) && !rows.find((r) => r.key === `tx${i}`)?.problem),
       budgets: proposal.plan.budgets.filter((_, i) => keep('bu', i)),
       goals: proposal.plan.goals.filter((_, i) => keep('go', i)),
@@ -101,7 +103,7 @@ export function AssistantCard({ categories, force }: { categories: Cat[]; force?
       const r = await applyPlanAction(plan)
       if (!r.ok) return void toast.error(r.error)
       const c = r.created
-      const parts = [c.transactions && `${c.transactions} movimiento${c.transactions === 1 ? '' : 's'}`, c.budgets && `${c.budgets} presupuesto${c.budgets === 1 ? '' : 's'}`, c.goals && `${c.goals} objetivo${c.goals === 1 ? '' : 's'}`].filter(Boolean)
+      const parts = [c.categories && `${c.categories} categoría${c.categories === 1 ? '' : 's'}`, c.transactions && `${c.transactions} movimiento${c.transactions === 1 ? '' : 's'}`, c.budgets && `${c.budgets} presupuesto${c.budgets === 1 ? '' : 's'}`, c.goals && `${c.goals} objetivo${c.goals === 1 ? '' : 's'}`].filter(Boolean)
       toast.success(`Cargué ${parts.join(', ') || 'nada'}${r.skipped ? ` (${r.skipped} quedaron afuera)` : ''}`)
       setProposal(null)
       setText('')
@@ -111,7 +113,20 @@ export function AssistantCard({ categories, force }: { categories: Cat[]; force?
     })
   }
 
+  // la persona eligió la moneda: los montos del plan se multiplican por la cotización (pesos = 1)
+  const scale = (factor: number) =>
+    setProposal((p) => {
+      if (!p) return p
+      const k = (c: number) => Math.min(Math.round(c * factor), 100_000_000_000_00)
+      return {
+        ...p,
+        ask: null,
+        plan: { ...p.plan, transactions: p.plan.transactions.map((t) => (t.amountCents ? { ...t, amountCents: k(t.amountCents) } : t)), budgets: p.plan.budgets.map((b) => ({ ...b, amountCents: k(b.amountCents) })), goals: p.plan.goals.map((g) => ({ ...g, targetCents: k(g.targetCents), savedCents: k(g.savedCents) })) },
+      }
+    })
+
   const groups: { id: Row['group']; label: string }[] = [
+    { id: 'ca', label: 'Categorías nuevas' },
     { id: 'tx', label: 'Movimientos' },
     { id: 'bu', label: 'Presupuestos' },
     { id: 'go', label: 'Objetivos' },
@@ -126,13 +141,13 @@ export function AssistantCard({ categories, force }: { categories: Cat[]; force?
         </span>
         <div className="min-w-0 flex-1">
           <h2 id="assistant-title" className="display text-[26px]">
-            ¿Qué querés cargar hoy?
+            {embedded ? 'Creá con IA' : '¿Qué querés cargar hoy?'}
           </h2>
-          <p className="mt-0.5 text-[13.5px] text-fg-2">Contame con tus palabras, o subí un archivo. Cargo movimientos, presupuestos y objetivos, y antes de guardar te muestro cómo quedan.</p>
+          <p className="mt-0.5 text-[13.5px] text-fg-2">Contame con tus palabras, o subí un archivo. Cargo movimientos, presupuestos, objetivos y categorías nuevas, y antes de guardar te muestro cómo quedan.</p>
         </div>
-        <button onClick={() => setVisible(false)} aria-label="Cerrar asistente" className="-mt-1 -mr-1 flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-full text-muted hover:bg-surface-2 hover:text-fg">
+        {!embedded && <button onClick={() => setVisible(false)} aria-label="Cerrar asistente" className="-mt-1 -mr-1 flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-full text-muted hover:bg-surface-2 hover:text-fg">
           <X className="size-4" />
-        </button>
+        </button>}
       </div>
 
       {!proposal ? (
@@ -187,7 +202,8 @@ export function AssistantCard({ categories, force }: { categories: Cat[]; force?
         </form>
       ) : (
         <div className="relative mt-4 space-y-4">
-          {proposal.ask && <CurrencyAsk ask={proposal.ask} onAnswered={() => setProposal({ ...proposal, ask: null })} />}
+          {proposal.ask && <CurrencyAsk ask={proposal.ask} onAnswer={scale} />}
+          <AiNotes notes={proposal.notes} onFix={() => setProposal(null)} fixLabel="Volver a escribir" />
           <p className="text-[13px] text-fg-2">Esto es lo que voy a cargar. Destildá lo que no quieras.</p>
           {groups.map((g) => {
             const list = rows.filter((r) => r.group === g.id)

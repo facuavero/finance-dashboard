@@ -7,7 +7,7 @@ import { Money } from '@/components/app/money'
 import { CapitalChart, Legend } from '@/components/charts/charts'
 import { getAppData } from '@/modules/app/data'
 import { projectCapital } from '@/modules/analytics/forecast'
-import { dateShort, monthName, relativeDays } from '@/lib/format'
+import { dateShort, monthName, relativeDays, toDisplayCents } from '@/lib/format'
 import { Simulator } from './simulator'
 
 export const metadata: Metadata = { title: 'Proyección' }
@@ -45,7 +45,7 @@ export default async function Proyeccion() {
             <Line icon={null} label="Capital hoy" cents={f.balanceNowCents} tag={<RealTag />} />
             <Line icon={<Plus className="size-3.5" />} label="Ingresos previstos" cents={f.expectedIncomeCents} tag={<EstimateTag />} hint="recurrentes que todavía no entraron" />
             <Line icon={<Minus className="size-3.5" />} label="Pagos fijos pendientes" cents={f.expectedFixedCents} tag={<EstimateTag />} hint="recurrentes que faltan pagar" />
-            <Line icon={<Minus className="size-3.5" />} label={`Gasto variable (${f.remainingDays} ${f.remainingDays === 1 ? 'día' : 'días'})`} cents={f.expectedVariableCents} tag={<EstimateTag />} hint={`tu promedio: ${Math.round(f.dailyVariableCents / 100).toLocaleString('es-AR')} por día`} />
+            <Line icon={<Minus className="size-3.5" />} label={`Gasto variable (${f.remainingDays} ${f.remainingDays === 1 ? 'día' : 'días'})`} cents={f.expectedVariableCents} tag={<EstimateTag />} hint={`tu promedio: ${Math.round(toDisplayCents(f.dailyVariableCents) / 100).toLocaleString('es-AR')} por día`} />
             <li className="flex items-center gap-2 border-t border-border pt-2.5 font-semibold">
               <Equal className="size-3.5 text-muted" />
               <span className="flex-1">Cierre de {monthName(today)}</span>

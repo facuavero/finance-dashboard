@@ -107,3 +107,37 @@ describe('recomendaciones y alertas', () => {
     expect(active.some((a) => a.key === alerts[0].key)).toBe(false)
   })
 })
+
+import { currencyAsk, explicitCurrency, ruleNotes, ruleParseTxn, toArs, type CurrencyRates } from '@/modules/ai/parse-txn'
+import { rulePlan } from '@/modules/ai/assistant'
+
+describe('moneda en la carga con IA', () => {
+  const rates: CurrencyRates = { arsPer: { ARS: 1, USD: 1000, EUR: 1200, BRL: 200 }, asOf: '2026-10-07', live: true }
+  it('un monto sin moneda no es dólares', () => {
+    expect(explicitCurrency('pedidosya 5000')).toBeNull()
+    expect(explicitCurrency('pedidosya 5000 pesos')).toBe('ARS')
+    expect(explicitCurrency('netflix 12 usd')).toBe('USD')
+    expect(explicitCurrency('50 dólares')).toBe('USD')
+    expect(explicitCurrency('30 euros')).toBe('EUR')
+  })
+  it('convierte a pesos y avisa la cotización', () => {
+    const r = toArs(50_00, 'USD', rates)
+    expect(r.cents).toBe(50_000_00)
+    expect(r.note?.kind).toBe('converted')
+  })
+  it('pregunta solo si la app no está en pesos y el texto no dice la moneda', () => {
+    expect(currencyAsk('pedidosya 5000', 'ARS', rates)).toBeNull()
+    expect(currencyAsk('pedidosya 5000 usd', 'USD', rates)).toBeNull()
+    const ask = currencyAsk('pedidosya 5000', 'USD', rates)
+    expect(ask?.options.map((o) => o.factor)).toEqual([1, 1000])
+  })
+  it('avisa lo que no entendió', () => {
+    const r = ruleParseTxn('algo raro', [], '2026-10-07')
+    expect(ruleNotes('algo raro', r.found, '2026-10-07').map((n) => n.text)).toContain('No encontré el monto.')
+  })
+  it('crea categorías por texto y convierte por línea', () => {
+    const plan = rulePlan('categoría gimnasio\npagué 50 usd de netflix', [], '2026-10-07', rates, [])
+    expect(plan.categories[0]?.name).toBe('Gimnasio')
+    expect(plan.transactions[0].amountCents).toBe(50_000_00)
+  })
+})

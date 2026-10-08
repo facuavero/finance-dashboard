@@ -15,7 +15,7 @@ import { EmptyState, Meter, PageHeader } from '@/components/app/states'
 import { AskAi } from '@/components/app/ask-ai'
 import { GOAL_STATE } from '@/components/app/blocks/goals-mini'
 import { Money } from '@/components/app/money'
-import { dateLong, money, parseMoneyInput, pct } from '@/lib/format'
+import { dateLong, money, parseBaseMoney, pct, amountText } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import { contributeGoalAction, deleteGoalAction, saveGoalAction } from '@/modules/finance/actions'
 import type { GoalStatus } from '@/modules/analytics/goals'
@@ -178,13 +178,13 @@ function GoalForm({ initial, today, onDone }: { initial: Partial<GoalStatus>; to
   const router = useRouter()
   const [kind, setKind] = useState<Kind>((initial.kind as Kind) ?? 'savings')
   const [name, setName] = useState(initial.name ?? '')
-  const [target, setTarget] = useState(initial.targetCents ? String(initial.targetCents / 100) : '')
-  const [saved, setSaved] = useState(initial.savedCents ? String(initial.savedCents / 100) : '')
+  const [target, setTarget] = useState(initial.targetCents ? amountText(initial.targetCents) : '')
+  const [saved, setSaved] = useState(initial.savedCents ? amountText(initial.savedCents) : '')
   const [date, setDate] = useState(initial.targetDate ?? '')
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [pending, start] = useTransition()
-  const t = parseMoneyInput(target) ?? 0
-  const s = parseMoneyInput(saved) ?? 0
+  const t = parseBaseMoney(target) ?? 0
+  const s = parseBaseMoney(saved) ?? 0
   const months = date ? monthsUntil(today, date) : 0
   const monthly = t > s && months > 0 ? Math.ceil((t - s) / Math.max(1, months)) : 0
 
@@ -254,9 +254,9 @@ function GoalForm({ initial, today, onDone }: { initial: Partial<GoalStatus>; to
 function ContributionForm({ goal, onDone }: { goal: GoalStatus; onDone: () => void }) {
   const router = useRouter()
   const [mode, setMode] = useState<'in' | 'out'>('in')
-  const [amount, setAmount] = useState(String(goal.recommendedMonthlyCents / 100))
+  const [amount, setAmount] = useState(amountText(goal.recommendedMonthlyCents))
   const [pending, start] = useTransition()
-  const cents = parseMoneyInput(amount)
+  const cents = parseBaseMoney(amount)
   return (
     <form
       className="space-y-4"

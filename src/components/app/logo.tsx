@@ -1,24 +1,16 @@
 import { cn } from '@/lib/utils'
 
-// rubí facetado: cada cara un tono plano, sin gradientes (no necesita ids y se ve igual repetido en la página)
-const FACETS: [string, string][] = [
-  ['6,11 10,5 13,11', '#c80f37'],
-  ['10,5 16,5 13,11', '#ff4d6d'],
-  ['16,5 19,11 13,11', '#ff8aa0'],
-  ['16,5 22,5 19,11', '#e0123d'],
-  ['26,11 22,5 19,11', '#a30b2c'],
-  ['6,11 13,11 16,28', '#b40d33'],
-  ['13,11 19,11 16,28', '#e0123d'],
-  ['19,11 26,11 16,28', '#7d0821'],
-]
-
+/**
+ * el mismo diamante de la landing, pero horneado: un sprite de 24 cuadros (public/gem-sprite.webp) que gira con CSS.
+ * sin WebGL, sin JS y sin memoria de video, así que cuesta lo mismo con uno o con diez en pantalla.
+ */
 export function Gem({ className }: { className?: string }) {
   return (
-    <svg viewBox="0 0 32 32" className={cn('size-7', className)} aria-hidden>
-      {FACETS.map(([points, fill]) => (
-        <polygon key={points} points={points} fill={fill} />
-      ))}
-    </svg>
+    <span aria-hidden className={cn('inline-flex size-8 shrink-0 items-center justify-center', className)}>
+      <span className="gem">
+        <span className="gem-strip" />
+      </span>
+    </span>
   )
 }
 

@@ -11,8 +11,9 @@ export const CURRENCIES = {
 export type Currency = keyof typeof CURRENCIES
 export const isCurrency = (v: unknown): v is Currency => typeof v === 'string' && v in CURRENCIES
 
-export type FormatPrefs = { currency: Currency; decimals: boolean }
-const DEFAULT_FORMAT: FormatPrefs = { currency: 'ARS', decimals: false }
+// los montos se guardan siempre en pesos (ARS). `rate` = cuántas unidades de la moneda elegida vale 1 peso: convierte al mostrar y al escribir
+export type FormatPrefs = { currency: Currency; decimals: boolean; rate: number }
+const DEFAULT_FORMAT: FormatPrefs = { currency: 'ARS', decimals: false, rate: 1 }
 
 // en el servidor la preferencia vive por request (react cache); en el navegador, en una variable del módulo
 const requestFormat = cache((): { v: FormatPrefs | null } => ({ v: null }))
@@ -33,7 +34,7 @@ const nf2 = new Intl.NumberFormat('es-AR', { minimumFractionDigits: 2, maximumFr
 
 export function money(cents: number, opts: { decimals?: boolean; sign?: boolean; compact?: boolean } = {}): string {
   const fmt = currentFormat()
-  const v = cents / 100
+  const v = toDisplayCents(cents) / 100
   const abs = Math.abs(v)
   let body: string
   if (opts.compact && abs >= 1_000_000) body = `${new Intl.NumberFormat('es-AR', { maximumFractionDigits: 1 }).format(abs / 1_000_000)} M`
@@ -103,6 +104,18 @@ export function parseMoneyInput(raw: string): number | null {
   const v = Number(normalized)
   if (!Number.isFinite(v)) return null
   return Math.round(v * 100)
+}
+
+/** centavos en pesos → centavos en la moneda que se muestra */
+export const toDisplayCents = (baseCents: number) => Math.round(baseCents * currentFormat().rate)
+/** centavos escritos en la moneda que se muestra → centavos en pesos (lo que se guarda) */
+export const toBaseCents = (displayCents: number) => Math.round(displayCents / currentFormat().rate)
+/** texto para precargar un input con un monto guardado, en la moneda que se muestra */
+export const amountText = (baseCents: number) => String(toDisplayCents(baseCents) / 100)
+/** lo que escribió la persona en un input (en su moneda) → pesos */
+export const parseBaseMoney = (raw: string): number | null => {
+  const c = parseMoneyInput(raw)
+  return c === null ? null : toBaseCents(c)
 }
 
 export const currencySymbol = () => CURRENCIES[currentFormat().currency].symbol

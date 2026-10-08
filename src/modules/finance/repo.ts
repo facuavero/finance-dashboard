@@ -102,6 +102,18 @@ export async function getTransaction(db: DB, userId: string, id: string) {
 
 export type BudgetUpsert = { name: string; categoryId: string | null; goalId: string | null; period: 'weekly' | 'monthly' | 'yearly'; amountCents: number }
 
+/** crea una categoría (o devuelve la que ya existe con ese nombre). `parentId` solo si es una categoría raíz propia del mismo tipo */
+export async function createCategory(db: DB, userId: string, input: { name: string; kind: 'expense' | 'income'; parentId: string | null }): Promise<string> {
+  const rows = await db.select().from(schema.categories).where(eq(schema.categories.userId, userId))
+  const key = (n: string) => n.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim()
+  const same = rows.find((c) => c.kind === input.kind && key(c.name) === key(input.name))
+  if (same) return same.id
+  const parent = input.parentId ? rows.find((c) => c.id === input.parentId && !c.parentId && c.kind === input.kind) : undefined
+  const id = newId()
+  await db.insert(schema.categories).values({ id, userId, parentId: parent?.id ?? null, name: input.name.trim().slice(0, 40), kind: input.kind, icon: 'circle', colorSlot: null, group: null, sortOrder: rows.reduce((m, c) => Math.max(m, c.sortOrder), 0) + 1 })
+  return id
+}
+
 export async function upsertBudget(db: DB, userId: string, input: BudgetUpsert, id?: string) {
   await assertOwnCategories(db, userId, [input.categoryId])
   if (id) {

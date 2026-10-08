@@ -6,7 +6,7 @@ import { Card } from '@/components/ui/card'
 import { SimulatorChart } from '@/components/charts/charts'
 import { Money } from '@/components/app/money'
 import { simulate } from '@/modules/analytics/simulator'
-import { currencySymbol } from '@/lib/format'
+import { currencySymbol, currentFormat, toBaseCents } from '@/lib/format'
 import { cn } from '@/lib/utils'
 
 type V = { initial: number; saving: number; invest: number; rate: number; reduction: number }
@@ -20,9 +20,12 @@ const FIELDS: { key: keyof V; label: string; hint: string; max: number; step: nu
 ]
 
 export function Simulator({ defaults }: { defaults: V }) {
-  const [v, setV] = useState<V>(defaults)
+  // los campos están en la moneda que se muestra; la cuenta se hace en pesos
+  const k = currentFormat().rate
+  const scale = (f: (typeof FIELDS)[number]) => (f.unit === '$' ? k : 1)
+  const [v, setV] = useState<V>(() => Object.fromEntries(FIELDS.map((f) => [f.key, f.unit === '$' ? Math.round(defaults[f.key] * k) : defaults[f.key]])) as V)
   const result = useMemo(
-    () => simulate({ initialCents: v.initial * 100, monthlySavingCents: v.saving * 100, monthlyInvestCents: v.invest * 100, annualRatePct: v.rate, expenseReductionCents: v.reduction * 100 }),
+    () => simulate({ initialCents: toBaseCents(v.initial * 100), monthlySavingCents: toBaseCents(v.saving * 100), monthlyInvestCents: toBaseCents(v.invest * 100), annualRatePct: v.rate, expenseReductionCents: toBaseCents(v.reduction * 100) }),
     [v],
   )
   const data = result.series.map((p) => ({
@@ -50,14 +53,14 @@ export function Simulator({ defaults }: { defaults: V }) {
                   value={f.unit === '%' ? v[f.key] : v[f.key].toLocaleString('es-AR')}
                   onChange={(e) => {
                     const n = Number(e.target.value.replace(/\./g, '').replace(',', '.'))
-                    if (Number.isFinite(n)) setV((p) => ({ ...p, [f.key]: Math.max(0, Math.min(f.max * 10, n)) }))
+                    if (Number.isFinite(n)) setV((p) => ({ ...p, [f.key]: Math.max(0, Math.min(f.max * scale(f) * 10, n)) }))
                   }}
                   className="num w-28 rounded-md border border-border bg-surface px-2 py-1 text-right font-medium"
                 />
                 {f.unit === '%' && <span className="text-muted">%</span>}
               </div>
             </div>
-            <input id={`sim-${f.key}`} type="range" min={0} max={f.max} step={f.step} value={Math.min(f.max, v[f.key])} onChange={(e) => setV((p) => ({ ...p, [f.key]: Number(e.target.value) }))} className="mt-2 w-full accent-[var(--accent)]" />
+            <input id={`sim-${f.key}`} type="range" min={0} max={f.max * scale(f)} step={f.step * scale(f)} value={Math.min(f.max * scale(f), v[f.key])} onChange={(e) => setV((p) => ({ ...p, [f.key]: Number(e.target.value) }))} className="mt-2 w-full accent-[var(--accent)]" />
             <p className="text-[12px] text-muted">{f.hint}</p>
           </div>
         ))}

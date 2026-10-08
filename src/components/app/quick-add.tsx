@@ -9,12 +9,12 @@ import { Button } from '@/components/ui/button'
 import { Field, Input, NativeSelect } from '@/components/ui/input'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/misc'
 import { CategoryIcon } from './icons'
-import { CurrencyAsk } from './currency-ask'
-import { MAX_AMOUNT_CENTS, currencySymbol, dateLong, money, parseMoneyInput } from '@/lib/format'
+import { AiNotes, CurrencyAsk } from './currency-ask'
+import { MAX_AMOUNT_CENTS, currencySymbol, dateLong, money, parseBaseMoney, amountText } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import { deleteTransactionsAction, saveTransactionAction } from '@/modules/finance/actions'
 import { parseTxnAction } from '@/modules/ai/actions'
-import type { Ask, ParsedTxn } from '@/modules/ai/parse-txn'
+import type { Ask, Note, ParsedTxn } from '@/modules/ai/parse-txn'
 
 export type CatOption = { id: string; name: string; kind: 'expense' | 'income'; parentId: string | null; icon: string; usage: number }
 
@@ -138,7 +138,7 @@ function cleanAmount(next: string): { value: string; tooBig: boolean } {
   let value = next.replace(/[^\d.,]/g, '')
   let tooBig = false
   // un pegado gigante se recorta al último valor permitido
-  while (value && (parseMoneyInput(value) ?? 0) > MAX_AMOUNT_CENTS) {
+  while (value && (parseBaseMoney(value) ?? 0) > MAX_AMOUNT_CENTS) {
     value = value.slice(0, -1)
     tooBig = true
   }
@@ -159,7 +159,7 @@ export function TxnForm({ initial, categories, today, onDone }: { initial: TxnDr
   const roots = categories.filter((c) => c.kind === d.type && !c.parentId)
   const top = [...roots].sort((a, b) => b.usage - a.usage).slice(0, 8)
   const subs = categories.filter((c) => c.parentId && c.parentId === d.categoryId)
-  const cents = parseMoneyInput(d.amount)
+  const cents = parseBaseMoney(d.amount)
   const yesterday = new Date(new Date(`${today}T00:00:00Z`).getTime() - 86_400_000).toISOString().slice(0, 10)
 
   useEffect(() => {
@@ -344,7 +344,7 @@ const RECURRENCE_LABEL: Record<TxnDraft['recurrence'], string> = { none: 'Único
 
 const asDraft = (p: ParsedTxn): Partial<TxnDraft> => ({
   type: p.type,
-  amount: p.amountCents ? String(p.amountCents / 100) : '',
+  amount: p.amountCents ? amountText(p.amountCents) : '',
   date: p.date,
   description: p.description,
   categoryId: p.categoryId,
@@ -360,7 +360,7 @@ const asDraft = (p: ParsedTxn): Partial<TxnDraft> => ({
 function AiCapture({ categories, today, onDone, onManual }: { categories: CatOption[]; today: string; onDone: () => void; onManual: (d: Partial<TxnDraft>) => void }) {
   const [text, setText] = useState('')
   const [fix, setFix] = useState('')
-  const [proposal, setProposal] = useState<{ draft: ParsedTxn; engine: string; external: boolean; ask: Ask | null } | null>(null)
+  const [proposal, setProposal] = useState<{ draft: ParsedTxn; engine: string; external: boolean; ask: Ask | null; notes: Note[] } | null>(null)
   const [error, setError] = useState('')
   const [thinking, startThinking] = useTransition()
   const { save, pending } = useSaveTxn(categories)
@@ -376,7 +376,7 @@ function AiCapture({ categories, today, onDone, onManual }: { categories: CatOpt
     startThinking(async () => {
       const r = await parseTxnAction(input)
       if (!r.ok) return void setError(r.error)
-      setProposal((prev) => ({ draft: r.draft, engine: r.engine, external: r.external, ask: input.previous ? (prev?.ask ?? null) : r.ask }))
+      setProposal((prev) => ({ draft: r.draft, engine: r.engine, external: r.external, ask: input.previous ? (prev?.ask ?? null) : r.ask, notes: [...(input.previous ? (prev?.notes ?? []).filter((n) => n.kind === 'converted') : []), ...r.notes] }))
       setFix('')
       // Enter vuelve a confirmar sin tocar el mouse
       setTimeout(() => confirmRef.current?.focus(), 0)
@@ -467,7 +467,8 @@ function AiCapture({ categories, today, onDone, onManual }: { categories: CatOpt
         </dl>
       </section>
 
-      {proposal.ask && <CurrencyAsk ask={proposal.ask} onAnswered={() => setProposal({ ...proposal, ask: null })} />}
+      {proposal.ask && <CurrencyAsk ask={proposal.ask} onAnswer={(f) => setProposal({ ...proposal, ask: null, draft: { ...p, amountCents: p.amountCents ? Math.min(Math.round(p.amountCents * f), MAX_AMOUNT_CENTS) : p.amountCents } })} />}
+      <AiNotes notes={proposal.notes} onFix={() => document.getElementById('qa-fix')?.focus()} fixLabel="Cambiarlo" />
 
       {!p.categoryId && (
         <fieldset>

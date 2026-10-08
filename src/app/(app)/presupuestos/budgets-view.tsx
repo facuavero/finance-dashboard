@@ -15,7 +15,7 @@ import { EmptyState, Meter, PageHeader } from '@/components/app/states'
 import { AskAi } from '@/components/app/ask-ai'
 import { CategoryBadge } from '@/components/app/icons'
 import { Money } from '@/components/app/money'
-import { dateShort, money, parseMoneyInput, pct, plural } from '@/lib/format'
+import { dateShort, money, parseBaseMoney, pct, plural, amountText } from '@/lib/format'
 import { deleteBudgetAction, saveBudgetAction } from '@/modules/finance/actions'
 import type { BudgetStatus } from '@/modules/analytics/budgets'
 
@@ -209,13 +209,13 @@ function BudgetForm({ initial, categories, goals, onDone }: { initial: Partial<B
   const [categoryId, setCategoryId] = useState(initial.categoryId ?? categories[0]?.id ?? '')
   const [goalId, setGoalId] = useState(initial.goalId ?? goals[0]?.id ?? '')
   const [period, setPeriod] = useState<B['period']>(initial.period ?? 'monthly')
-  const [amount, setAmount] = useState(initial.amountCents ? String(initial.amountCents / 100) : '')
+  const [amount, setAmount] = useState(initial.amountCents ? amountText(initial.amountCents) : '')
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [pending, start] = useTransition()
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault()
-    const cents = parseMoneyInput(amount)
+    const cents = parseBaseMoney(amount)
     const catName = categories.find((c) => c.id === categoryId)?.name
     const finalName = name.trim() || (kind === 'total' ? 'Gasto total' : kind === 'goal' ? (goals.find((g) => g.id === goalId)?.name ?? '') : (catName ?? ''))
     const errs: Record<string, string> = {}

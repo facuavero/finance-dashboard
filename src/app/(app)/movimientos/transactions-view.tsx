@@ -17,7 +17,7 @@ import { CategoryIcon } from '@/components/app/icons'
 import { Money } from '@/components/app/money'
 import { PAYMENT_METHODS, TxnForm, useQuickAdd, type CatOption, type TxnDraft } from '@/components/app/quick-add'
 import { ImportDialog } from './import-dialog'
-import { currencySymbol, dateLong, money, parseMoneyInput, plural } from '@/lib/format'
+import { currencySymbol, dateLong, money, parseBaseMoney, plural, amountText } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import { deleteTransactionsAction } from '@/modules/finance/actions'
 import type { Txn } from '@/modules/analytics/types'
@@ -95,8 +95,8 @@ export function TransactionsView({ rows, categories, today, initialQuery, openIm
   const filtered = useMemo(() => {
     const b = rangeBounds(f, today)
     const q = norm(f.q.trim())
-    const min = parseMoneyInput(f.min)
-    const max = parseMoneyInput(f.max)
+    const min = parseBaseMoney(f.min)
+    const max = parseBaseMoney(f.max)
     const out = rows.filter((r) => {
       if (f.type !== 'all' && r.type !== f.type) return false
       if (b && (r.date < b.from || r.date > b.to)) return false
@@ -149,7 +149,7 @@ export function TransactionsView({ rows, categories, today, initialQuery, openIm
   const editDraft = (r: Row): TxnDraft => ({
     id: r.id,
     type: r.type,
-    amount: String(r.amountCents / 100).replace('.', ','),
+    amount: amountText(r.amountCents).replace('.', ','),
     date: r.date,
     description: r.description,
     categoryId: r.categoryId,

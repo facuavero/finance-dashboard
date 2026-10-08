@@ -99,17 +99,8 @@ function starTexture(): THREE.Texture {
   return t
 }
 
-/** monta el diamante en `host`. devuelve la función que lo desmonta. lanza si el navegador no tiene WebGL */
-export function mountGem(host: HTMLElement): () => void {
-  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true, powerPreference: 'low-power' })
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2))
-  renderer.toneMapping = THREE.ACESFilmicToneMapping
-  renderer.toneMappingExposure = 1.3
-  renderer.setClearColor(0x000000, 0)
-  renderer.domElement.style.cssText = 'display:block;width:100%;height:100%'
-  host.appendChild(renderer.domElement)
-
+/** escena del diamante: se usa en vivo (mountGem) y para hornear el sprite de los diamantes chicos */
+export function createGem(renderer: THREE.WebGLRenderer, reduce: boolean) {
   const scene = new THREE.Scene()
   const env = studio(renderer)
   scene.environment = env
@@ -139,7 +130,7 @@ export function mountGem(host: HTMLElement): () => void {
     const sp = new THREE.Sprite(mat)
     sp.renderOrder = 10
     scene.add(sp)
-    return { sp, mat, period: 1.8 + (i % 4) * 0.55, phase: i * 0.83, seed: i * 7.13 }
+    return { sp, mat, period: 1.8 + (i % 4) * 0.55, phase: i * 0.83, seed: i * 7.13, last: NaN }
   })
   const place = (s: (typeof sparks)[number], n: number) => {
     // punto al azar sobre la piedra, del lado de la cámara
@@ -148,28 +139,21 @@ export function mountGem(host: HTMLElement): () => void {
     const th = (a - Math.floor(a)) * Math.PI * 2
     const r = 0.25 + (b - Math.floor(b)) * 0.95
     s.sp.position.set(Math.cos(th) * r * 1.2, Math.sin(th) * r * 1.15 + 0.15, 1.2)
-    s.sp.scale.setScalar(0.5 + ((a * 3) % 1 + 1) % 1 * 0.55)
+    s.sp.scale.setScalar(0.5 + ((((a * 3) % 1) + 1) % 1) * 0.55)
   }
 
-  const resize = () => {
-    const w = host.clientWidth || 1
-    const h = host.clientHeight || 1
-    renderer.setSize(w, h, false)
-    camera.aspect = w / h
-    camera.updateProjectionMatrix()
-  }
-  const draw = (t: number) => {
-    const spin = reduce ? 0.6 : t * 0.55
+  /** `spin` en radianes: el sprite lo fija para que el loop cierre justo en una vuelta */
+  const draw = (t: number, spin = reduce ? 0.6 : t * 0.55) => {
     pivot.rotation.set(0.42 + Math.sin(t * 0.6) * (reduce ? 0 : 0.06), spin, Math.sin(t * 0.4) * (reduce ? 0 : 0.04))
     pivot.position.y = reduce ? 0 : Math.sin(t * 1.1) * 0.06
-    inner.envMapRotation.y = -spin * 0.8 + 1
+    inner.envMapRotation.y = reduce ? 1 : -spin * 0.8 + 1
     rim.position.set(Math.cos(t * 0.9) * -3.5, Math.sin(t * 0.7) * 1.5, 3)
     for (const s of sparks) {
       const k = (t + s.phase) / s.period
       const f = k - Math.floor(k)
       const life = f < 0.35 ? Math.sin((f / 0.35) * Math.PI) : 0
-      if (Math.floor(k) !== (s as { last?: number }).last) {
-        ;(s as { last?: number }).last = Math.floor(k)
+      if (Math.floor(k) !== s.last) {
+        s.last = Math.floor(k)
         place(s, Math.floor(k))
       }
       s.mat.opacity = reduce ? 0 : life
@@ -177,11 +161,40 @@ export function mountGem(host: HTMLElement): () => void {
     }
     renderer.render(scene, camera)
   }
+  const dispose = () => {
+    geo.dispose()
+    inner.dispose()
+    outer.dispose()
+    tex.dispose()
+    for (const s of sparks) s.mat.dispose()
+    env.dispose()
+  }
+  return { camera, draw, dispose }
+}
 
+/** monta el diamante en `host`. devuelve la función que lo desmonta. lanza si el navegador no tiene WebGL */
+export function mountGem(host: HTMLElement): () => void {
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true, powerPreference: 'low-power' })
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2))
+  renderer.toneMapping = THREE.ACESFilmicToneMapping
+  renderer.toneMappingExposure = 1.3
+  renderer.setClearColor(0x000000, 0)
+  renderer.domElement.style.cssText = 'display:block;width:100%;height:100%'
+  host.appendChild(renderer.domElement)
+  const gem = createGem(renderer, reduce)
+
+  const resize = () => {
+    const w = host.clientWidth || 1
+    const h = host.clientHeight || 1
+    renderer.setSize(w, h, false)
+    gem.camera.aspect = w / h
+    gem.camera.updateProjectionMatrix()
+  }
   resize()
   const ro = new ResizeObserver(() => {
     resize()
-    if (reduce) draw(0)
+    if (reduce) gem.draw(0)
   })
   ro.observe(host)
 
@@ -191,7 +204,7 @@ export function mountGem(host: HTMLElement): () => void {
   const loop = () => {
     raf = 0
     if (!visible || document.hidden) return
-    draw((performance.now() - t0) / 1000)
+    gem.draw((performance.now() - t0) / 1000)
     raf = requestAnimationFrame(loop)
   }
   const kick = () => {
@@ -203,7 +216,7 @@ export function mountGem(host: HTMLElement): () => void {
   })
   io.observe(host)
   document.addEventListener('visibilitychange', kick)
-  if (reduce) draw(0)
+  if (reduce) gem.draw(0)
   else kick()
 
   return () => {
@@ -212,12 +225,7 @@ export function mountGem(host: HTMLElement): () => void {
     io.disconnect()
     ro.disconnect()
     document.removeEventListener('visibilitychange', kick)
-    geo.dispose()
-    inner.dispose()
-    outer.dispose()
-    tex.dispose()
-    for (const s of sparks) s.mat.dispose()
-    env.dispose()
+    gem.dispose()
     renderer.dispose()
     renderer.domElement.remove()
   }

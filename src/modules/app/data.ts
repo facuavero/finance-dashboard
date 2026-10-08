@@ -11,6 +11,7 @@ import { combineSignals } from '@/modules/insights/combined'
 import { buildRecommendations } from '@/modules/ai/rules'
 import { applyStates, buildAlerts } from '@/modules/alerts/engine'
 import { setRequestFormat } from '@/lib/format'
+import { getRates } from '@/modules/currency/rates'
 import { PREFS_COOKIE, parsePrefs, toCurrency } from '@/modules/settings/prefs'
 
 /** todo lo que necesitan las pantallas privadas, calculado una sola vez por request */
@@ -20,7 +21,9 @@ export const getAppData = cache(async () => {
   const today = todayISO()
   const prefs = parsePrefs((await cookies()).get(PREFS_COOKIE)?.value)
   const currency = toCurrency(user.currency)
-  setRequestFormat({ currency, decimals: prefs.decimals })
+  const rates = await getRates()
+  const rate = rates.perARS[currency]
+  setRequestFormat({ currency, decimals: prefs.decimals, rate })
   const [finance, signals, states, integrations] = await Promise.all([
     loadFinance(db, user.id),
     loadSignals(db, user.id),
@@ -50,7 +53,7 @@ export const getAppData = cache(async () => {
   const allAlerts = buildAlerts(ctx, { combined, recommendations })
   const { active: alerts, hidden: hiddenAlerts } = applyStates(allAlerts, states)
 
-  return { user, db, today, prefs, currency, finance, signals, ctx, recommendations, combined, alerts, hiddenAlerts, alertStates: states, integrations }
+  return { user, db, today, prefs, currency, rate, rates, finance, signals, ctx, recommendations, combined, alerts, hiddenAlerts, alertStates: states, integrations }
 })
 
 export type AppData = Awaited<ReturnType<typeof getAppData>>

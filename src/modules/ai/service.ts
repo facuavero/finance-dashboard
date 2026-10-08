@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto'
 import { and, desc, eq } from 'drizzle-orm'
 import { type DB, schema } from '@/db/client'
 import { newId } from '@/lib/ids'
-import { money, pct } from '@/lib/format'
+import { currentFormat, money, pct } from '@/lib/format'
 import type { FinancialContext } from '@/modules/analytics/context'
 import type { CombinedReport } from '@/modules/insights/combined'
 import { availableEngine, complete, parseJson } from './providers'
@@ -22,38 +22,40 @@ export type AiReport = {
  * lo único que sale hacia la ia externa. sin nombre, email, descripciones completas ni contenido de correos.
  * se muestra tal cual en la pantalla de privacidad.
  */
-export function aiPayload(ctx: FinancialContext, recs: Recommendation[], combined: CombinedReport | null, currency = 'ARS') {
+export function aiPayload(ctx: FinancialContext, recs: Recommendation[], combined: CombinedReport | null, _currency = 'ARS') {
+  // los montos se guardan en pesos: al modelo le llegan en la moneda que la persona ve, así sus textos coinciden con la pantalla
+  const k = currentFormat().rate / 100
   return {
     fecha: ctx.today,
-    moneda: currency,
+    moneda: currentFormat().currency,
     mes_en_curso: {
-      ingresos: ctx.month.incomeCents / 100,
-      gastos: ctx.month.expenseCents / 100,
-      ahorro_neto: ctx.month.netCents / 100,
+      ingresos: ctx.month.incomeCents * k,
+      gastos: ctx.month.expenseCents * k,
+      ahorro_neto: ctx.month.netCents * k,
       tasa_ahorro: ctx.month.savingsRate,
       variacion_gastos_vs_mes_anterior: ctx.month.deltas.expense.pct,
     },
-    capital_disponible: ctx.balanceCents / 100,
-    ingreso_mensual_tipico: ctx.monthlyIncomeCents / 100,
-    gasto_mensual_tipico: ctx.monthlyExpenseCents / 100,
-    categorias_mes: ctx.categories.slice(0, 8).map((c) => ({ categoria: c.name, monto: c.cents / 100, porcentaje: Number(c.pct.toFixed(3)) })),
-    prevision_fin_de_mes: ctx.forecast.endOfMonthBalanceCents / 100,
-    capacidad_ahorro_mensual: ctx.capacity.capacityCents / 100,
-    presupuestos: ctx.budgets.map((b) => ({ nombre: b.name, periodo: b.period, limite: b.amountCents / 100, gastado: b.spentCents / 100, usado: Number(b.pct.toFixed(2)), estado: b.state, dias_restantes: b.daysLeft, proyectado: b.projectedCents / 100 })),
-    objetivos: ctx.goals.map((g) => ({ nombre: g.name, meta: g.targetCents / 100, ahorrado: g.savedCents / 100, fecha_objetivo: g.targetDate, estado: g.state, aporte_mensual_recomendado: g.recommendedMonthlyCents / 100 })),
-    microgastos: { umbral: ctx.micro.thresholdCents / 100, este_mes: ctx.micro.thisMonth.totalCents / 100, cantidad_este_mes: ctx.micro.thisMonth.count, promedio_mensual: ctx.micro.monthlyAvgCents / 100, patrones: ctx.micro.patterns.slice(0, 5).map((m) => ({ patron: m.label, mensual: m.monthlyCents / 100, veces_por_mes: Number(m.countPerMonth.toFixed(1)) })) },
-    pagos_recurrentes: { cantidad: ctx.recurringTotals.count, mensual: ctx.recurringTotals.monthlyCents / 100, suscripciones_mensual: ctx.recurringTotals.subscriptionsMonthlyCents / 100 },
+    capital_disponible: ctx.balanceCents * k,
+    ingreso_mensual_tipico: ctx.monthlyIncomeCents * k,
+    gasto_mensual_tipico: ctx.monthlyExpenseCents * k,
+    categorias_mes: ctx.categories.slice(0, 8).map((c) => ({ categoria: c.name, monto: c.cents * k, porcentaje: Number(c.pct.toFixed(3)) })),
+    prevision_fin_de_mes: ctx.forecast.endOfMonthBalanceCents * k,
+    capacidad_ahorro_mensual: ctx.capacity.capacityCents * k,
+    presupuestos: ctx.budgets.map((b) => ({ nombre: b.name, periodo: b.period, limite: b.amountCents * k, gastado: b.spentCents * k, usado: Number(b.pct.toFixed(2)), estado: b.state, dias_restantes: b.daysLeft, proyectado: b.projectedCents * k })),
+    objetivos: ctx.goals.map((g) => ({ nombre: g.name, meta: g.targetCents * k, ahorrado: g.savedCents * k, fecha_objetivo: g.targetDate, estado: g.state, aporte_mensual_recomendado: g.recommendedMonthlyCents * k })),
+    microgastos: { umbral: ctx.micro.thresholdCents * k, este_mes: ctx.micro.thisMonth.totalCents * k, cantidad_este_mes: ctx.micro.thisMonth.count, promedio_mensual: ctx.micro.monthlyAvgCents * k, patrones: ctx.micro.patterns.slice(0, 5).map((m) => ({ patron: m.label, mensual: m.monthlyCents * k, veces_por_mes: Number(m.countPerMonth.toFixed(1)) })) },
+    pagos_recurrentes: { cantidad: ctx.recurringTotals.count, mensual: ctx.recurringTotals.monthlyCents * k, suscripciones_mensual: ctx.recurringTotals.subscriptionsMonthlyCents * k },
     recomendaciones_calculadas: recs.map((r) => ({
       id: r.id,
       area: r.area,
       problema: r.problem,
       explicacion: r.explanation,
       accion: r.action,
-      impacto_mensual: r.impactMonthlyCents !== null ? r.impactMonthlyCents / 100 : null,
-      impacto_anual: r.impactAnnualCents !== null ? r.impactAnnualCents / 100 : null,
+      impacto_mensual: r.impactMonthlyCents !== null ? r.impactMonthlyCents * k : null,
+      impacto_anual: r.impactAnnualCents !== null ? r.impactAnnualCents * k : null,
       prioridad: r.priority,
     })),
-    proximas_semanas: combined ? { resumen: combined.summary, hallazgos: combined.findings.filter((f) => f.impact !== 'none').slice(0, 8).map((f) => ({ impacto: f.impact, titulo: f.title, monto: f.amountCents ? f.amountCents / 100 : null, estimado: f.estimated })) } : null,
+    proximas_semanas: combined ? { resumen: combined.summary, hallazgos: combined.findings.filter((f) => f.impact !== 'none').slice(0, 8).map((f) => ({ impacto: f.impact, titulo: f.title, monto: f.amountCents ? f.amountCents * k : null, estimado: f.estimated })) } : null,
   }
 }
 

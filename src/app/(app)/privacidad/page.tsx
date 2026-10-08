@@ -20,7 +20,7 @@ const ROWS: { data: string; why: string; where: string; remove: string }[] = [
   { data: 'Calendar: título, fechas y tipo de los eventos de los próximos 60 días', why: 'Anticipar viajes, eventos y vencimientos', where: 'Tabla separada de hallazgos', remove: 'Desconectar Calendar' },
   { data: 'Tokens de acceso de Google', why: 'Mantener la conexión sin pedirte permiso cada vez', where: 'Cifrados con AES-256-GCM', remove: 'Desconectar (además se revocan en Google)' },
   { data: 'Resúmenes generados por la IA', why: 'No volver a pedirle lo mismo a la IA si tus datos no cambiaron', where: 'Base de datos de Caudal', remove: 'Borrar datos financieros' },
-  { data: 'Moneda de visualización', why: 'Mostrar tus montos con el símbolo que elegiste', where: 'En tu cuenta', remove: 'Borrar la cuenta' },
+  { data: 'Moneda de visualización', why: 'Mostrar tus montos en la moneda que elegiste (los guardados siempre quedan en pesos)', where: 'En tu cuenta', remove: 'Borrar la cuenta' },
   { data: 'Tema, modo privacidad, centavos y tip del día', why: 'Recordar tus preferencias', where: 'Solo en tu navegador (cookie y almacenamiento local)', remove: 'Borrar datos del sitio en el navegador' },
   { data: 'Texto que escribís para cargar un movimiento con IA', why: 'Interpretarlo y proponerte el movimiento. Se envía el texto, la fecha de hoy y los nombres de tus categorías', where: 'No se guarda: solo viaja al proveedor de IA, y solo si la IA externa está activa', remove: 'Desactivá la IA externa más abajo y se interpreta en el servidor de Caudal' },
 ]
